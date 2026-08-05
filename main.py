@@ -19,17 +19,16 @@ def home():
 def run_webserver():
     port = int(os.getenv("PORT", "10000"))
     web_app.run(host="0.0.0.0", port=port)
-
-
-class GrowBot(discord.Client):
+    class GrowBot(discord.Client):
     def __init__(self):
         intents = discord.Intents.default()
+
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self):
-        commands = await self.tree.sync()
-        print(f"{len(commands)} Slash-Commands synchronisiert.")
+        synced_commands = await self.tree.sync()
+        print(f"{len(synced_commands)} Slash-Commands synchronisiert.")
 
     async def on_ready(self):
         print(f"GrowBot ist online als {self.user}")
@@ -41,7 +40,9 @@ class GrowBot(discord.Client):
         )
 
 
-bot = GrowBot()
+bot = GrowBot()bot = GrowBot()
+
+
 @bot.tree.command(
     name="hilfe",
     description="Zeigt die verfügbaren GrowBot-Befehle."
@@ -58,8 +59,7 @@ async def hilfe(interaction: discord.Interaction):
         value="Growlogs und Pflanzenprofile folgen in Phase 2.",
         inline=False
     )
-
-    embed.add_field(
+       embed.add_field(
         name="🛠 Status",
         value="Grundgerüst Version 1.0 ist aktiv.",
         inline=False
@@ -68,11 +68,8 @@ async def hilfe(interaction: discord.Interaction):
     embed.set_footer(
         text="Black Forest Genetics • GrowBot 1.0"
     )
-    
-        
-        await interaction.response.send_message(
-        embed=embed
-    )
+
+    await interaction.response.send_message(embed=embed)
 
 
 @bot.tree.command(
@@ -82,8 +79,7 @@ async def hilfe(interaction: discord.Interaction):
 async def status(interaction: discord.Interaction):
     await interaction.response.send_message(
         "✅ Der Black Forest Genetics GrowBot ist online."
-    )
-
+)
 
 if not TOKEN:
     raise RuntimeError(
