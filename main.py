@@ -42,8 +42,7 @@ class GrowBot(discord.Client):
         )
 
 
-bot = GrowBot()
-@bot.tree.command(
+bot = @bot.tree.command(
     name="hilfe",
     description="Zeigt die verfügbaren GrowBot-Befehle."
 )
@@ -66,8 +65,9 @@ async def hilfe(interaction: discord.Interaction):
         inline=False
     )
 
-    embed.set_footer(text="Black Forest Genetics • GrowBot 1.0")
-      await interaction.response.send_message(embed=embed)
+    embed.set_footer(
+        text="Black Forest Genetics • GrowBot 1.0"
+    )
 
 
 @bot.tree.command(
@@ -84,7 +84,7 @@ if not TOKEN:
     raise RuntimeError(
         "DISCORD_TOKEN fehlt. Hinterlege ihn bei Render."
     )
-
+   await interaction.response.send_message(embed=embed)
 
 threading.Thread(target=run_webserver, daemon=True).start()
 bot.run(TOKEN)
