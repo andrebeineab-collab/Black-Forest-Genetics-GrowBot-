@@ -42,7 +42,7 @@ class GrowBot(discord.Client):
         )
 
 
-bot = @bot.tree.command(
+@bot.tree.command(
     name="hilfe",
     description="Zeigt die verfügbaren GrowBot-Befehle."
 )
