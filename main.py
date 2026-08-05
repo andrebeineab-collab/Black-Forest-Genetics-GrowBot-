@@ -25,7 +25,7 @@ class GrowBot(discord.Client):
         intents = discord.Intents.default()
         intents.guilds = True
         intents.members = True
-        intents.message_content = True
+        intents.message_content = True 
       
 
         super().__init__(intents=intents)
