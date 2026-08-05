@@ -45,7 +45,7 @@ class GrowBot(discord.Client):
 @bot.tree.command(
     name="hilfe",
     description="Zeigt die verfügbaren GrowBot-Befehle."
-)
+    )
 async def hilfe(interaction: discord.Interaction):
     embed = discord.Embed(
         title="🌲 Black Forest Genetics GrowBot",
