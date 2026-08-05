@@ -68,6 +68,7 @@ async def hilfe(interaction: discord.Interaction):
     embed.set_footer(
         text="Black Forest Genetics • GrowBot 1.0"
     )
+await interaction.response.send_message(embed=embed)
 
 
 @bot.tree.command(
