@@ -45,48 +45,19 @@ class GrowBot(discord.Client):
                 name="Black Forest Genetics 🌱"
             )
         )
-
-bot = GrowBot()# -------------------------
-# /hilfe
-# -------------------------
-
 @bot.tree.command(
     name="hilfe",
     description="Zeigt die verfügbaren GrowBot-Befehle."
 )
 async def hilfe(interaction: discord.Interaction):
-
-    embed = discord.Embed(
-        title="🌲 Black Forest Genetics GrowBot",
-        description="Willkommen beim digitalen GrowBot!",
-        color=discord.Color.green()
+    await interaction.response.send_message(
+        "🌲 Black Forest Genetics GrowBot\n"
+        "✅ Version 1.0 ist aktiv.\n"
+        "🌱 Growlogs und Pflanzenprofile folgen als Nächstes."
     )
-
-    embed.add_field(
-        name="🌱 Growlogs",
-        value="Digitale Growlogs und Pflanzenprofile folgen in den nächsten Versionen.",
-        inline=False
-    )  
-    embed.add_field(
-        name="🛠 Status",
-        value="Version 1.0 • Bot wird erfolgreich eingerichtet.",
-        inline=False
-    )
-
-    embed.set_footer(
-        text="Black Forest Genetics • GrowBot"
-    )
-
-       await interaction.response.send_message(embed=embed)
-
-
-# -------------------------
-# /status
-# -------------------------
-
 @bot.tree.command(
     name="status",
-    description="Zeigt den Status des GrowBots."
+    description="Zeigt den Statuinline=s des GrowBots."
 )
 async def status(interaction: discord.Interaction):
     await interaction.response.send_message(
