@@ -71,7 +71,13 @@ async def status(interaction: discord.Interaction):
 async def grow_erstellen(
     interaction: discord.Interaction,
     name: str,
-    sorte: str
+    sorte: str,
+    breeder: str = "—",
+    keimdatum: str = "—",
+    phase: str = "Wachstum",
+    medium: str = "—",
+    topfgroesse: str = "—",
+    lampe: str = "—"
 ):
     if not isinstance(interaction.channel, discord.TextChannel):
         await interaction.response.send_message(
