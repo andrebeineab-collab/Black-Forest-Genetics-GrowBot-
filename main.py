@@ -91,11 +91,16 @@ async def grow_erstellen(
         ephemeral=True
     )
     startnachricht = await interaction.channel.send(
-        f"🌱 **Pflanzenprofil: {name}**\n"
+        f"## 🌱 Pflanzenprofil: {name}\n"
         f"🧬 **Sorte:** {sorte}\n"
+        f"🏷️ **Breeder:** {breeder}\n"
+        f"📅 **Keimdatum:** {keimdatum}\n"
+        f"🌿 **Phase:** {phase}\n"
+        f"🪴 **Medium:** {medium}\n"
+        f"🪣 **Topfgröße:** {topfgroesse}\n"
+        f"💡 **Lampe:** {lampe}\n"
         f"👤 **Grower:** {interaction.user.mention}"
     )
-
     thread = await startnachricht.create_thread(
         name=f"🌱 {name} – Growlog",
         auto_archive_duration=1440
@@ -105,6 +110,12 @@ async def grow_erstellen(
         f"## 🌲 Black Forest Genetics Growlog\n\n"
         f"**Pflanze:** {name}\n"
         f"**Sorte:** {sorte}\n"
+        f"**Breeder:** {breeder}\n"
+        f"**Keimdatum:** {keimdatum}\n"
+        f"**Phase:** {phase}\n"
+        f"**Medium:** {medium}\n"
+        f"**Topfgröße:** {topfgroesse}\n"
+        f"**Lampe:** {lampe}\n"
         f"**Grower:** {interaction.user.mention}\n\n"
         f"### 📋 Neuer Eintrag\n"
         f"🌡️ **Temperatur:** —\n"
