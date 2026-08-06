@@ -77,7 +77,7 @@ async def hilfe(interaction: discord.Interaction):
         text="Black Forest Genetics • GrowBot"
     )
 
-    await interaction.response.send_message(embed=embed)
+       await interaction.response.send_message(embed=embed)
 
 
 # -------------------------
@@ -89,13 +89,14 @@ async def hilfe(interaction: discord.Interaction):
     description="Zeigt den Status des GrowBots."
 )
 async def status(interaction: discord.Interaction):
-
     await interaction.response.send_message(
         "✅ Black Forest Genetics GrowBot läuft erfolgreich."
-    )# -------------------------
+    )
+
+
+# -------------------------
 # Bot starten
 # -------------------------
-
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
