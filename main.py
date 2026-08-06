@@ -23,7 +23,6 @@ def run_webserver():
 # Discord Bot
 # -------------------------
 class GrowBot(discord.Client):
-
     def __init__(self):
         intents = discord.Intents.default()
         intents.guilds = True
@@ -45,6 +44,8 @@ class GrowBot(discord.Client):
                 name="Black Forest Genetics 🌱"
             )
         )
+bot = GrowBot()
+
 @bot.tree.command(
     name="hilfe",
     description="Zeigt die verfügbaren GrowBot-Befehle."
