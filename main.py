@@ -156,8 +156,7 @@ async def eintrag(
         f"👤 **Grower:** {interaction.user.mention}\n\n"
         f"🌡️ **Temperatur:** {temperatur}\n"
         f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
-        f"🚿 **Gießen:**
-    {giessen}\n"
+        f"🚿 **Gießen:**{giessen}\n"
         f"🧪 **Düngung:** {duengung}\n"
         f"⚗️ **pH:** {ph}\n"
         f"💡 **PPFD / DLI:** {ppfd_dli}\n"
