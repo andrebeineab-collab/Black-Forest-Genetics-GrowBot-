@@ -4,6 +4,31 @@ import threading
 from flask import Flask
 import discord
 from discord import app_commands
+from datetime import datetime, date
+
+def berechne_pflanzenalter(keimdatum: str) -> tuple[int | None, int | None]:
+    """Berechnet Lebenstag und Lebenswoche aus dem Keimdatum."""
+
+    datum = None
+
+    for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
+        try:
+            datum = datetime.strptime(keimdatum.strip(), formatierung).date()
+            break
+        except ValueError:
+            continue
+
+    if datum is None:
+        return None, None
+
+    lebenstage = (date.today() - datum).days + 1
+
+    if lebenstage < 1:
+        return None, None
+
+    lebenswoche = ((lebenstage - 1) // 7) + 1
+
+    return lebenstage, lebenswoche
 
 # -------------------------
 # Webserver für Render
