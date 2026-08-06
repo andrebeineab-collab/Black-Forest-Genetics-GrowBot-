@@ -64,7 +64,21 @@ async def status(interaction: discord.Interaction):
     await interaction.response.send_message(
         "✅ Black Forest Genetics GrowBot läuft erfolgreich."
     )
-
+@bot.tree.command(
+    name="grow_erstellen",
+    description="Erstellt ein neues Pflanzenprofil."
+)
+async def grow_erstellen(
+    interaction: discord.Interaction,
+    name: str,
+    sorte: str
+):
+    await interaction.response.send_message(
+        f"🌱 **Neues Grow-Profil erstellt!**\n\n"
+        f"**Pflanze:** {name}\n"
+        f"**Sorte:** {sorte}"
+    )
+    
 # -------------------------
 # Bot starten
 # -------------------------
