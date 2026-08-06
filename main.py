@@ -117,8 +117,7 @@ async def grow_erstellen(
         f"✅ Growlog erstellt: {thread.mention}",
         ephemeral=True
     )
-
-    
+  
 # -------------------------
 # Bot starten
 # -------------------------
