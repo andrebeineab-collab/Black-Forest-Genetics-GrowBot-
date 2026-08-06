@@ -66,7 +66,8 @@ async def hilfe(interaction: discord.Interaction):
         name="🌱 Growlogs",
         value="Digitale Growlogs und Pflanzenprofile folgen in den nächsten Versionen.",
         inline=False
-    )    embed.add_field(
+    )  
+    embed.add_field(
         name="🛠 Status",
         value="Version 1.0 • Bot wird erfolgreich eingerichtet.",
         inline=False
