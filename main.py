@@ -116,7 +116,57 @@ async def grow_erstellen(
         f"✅ Growlog erstellt: {thread.mention}",
         ephemeral=True
     )
-  
+@bot.tree.command(
+    name="eintrag",
+    description="Fügt einen neuen Eintrag zum Growlog hinzu."
+)
+@app_commands.describe(
+    temperatur="Temperatur, zum Beispiel 24 °C",
+    luftfeuchtigkeit="Luftfeuchtigkeit, zum Beispiel 65 %",
+    giessen="Gießmenge oder Angabe zum Gießen",
+    duengung="Verwendeter Dünger und Dosierung",
+    ph="Gemessener pH-Wert",
+    ppfd_dli="Gemessener PPFD- oder DLI-Wert",
+    wuchshoehe="Aktuelle Wuchshöhe",
+    notizen="Weitere Beobachtungen"
+)
+async def eintrag(
+    interaction: discord.Interaction,
+    temperatur: str = "—",
+    luftfeuchtigkeit: str = "—",
+    giessen: str = "—",
+    duengung: str = "—",
+    ph: str = "—",
+    ppfd_dli: str = "—",
+    wuchshoehe: str = "—",
+    notizen: str = "—"
+):
+    if not
+isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Benutze `/eintrag` innerhalb eines Growlog-Threads.",
+            ephemeral=True
+        )
+        return
+
+    zeitpunkt = int(interaction.created_at.timestamp())
+
+    await interaction.response.send_message(
+        f"## 📋 Neuer Growlog-Eintrag\n"
+        f"📅 **Zeitpunkt:** <t:{zeitpunkt}:F>\n"
+        f"👤 **Grower:** {interaction.user.mention}\n\n"
+        f"🌡️ **Temperatur:** {temperatur}\n"
+        f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
+        f"🚿 **Gießen:**
+    {giessen}\n"
+        f"🧪 **Düngung:** {duengung}\n"
+        f"⚗️ **pH:** {ph}\n"
+        f"💡 **PPFD / DLI:** {ppfd_dli}\n"
+        f"📏 **Wuchshöhe:** {wuchshoehe}\n"
+        f"📝 **Notizen:** {notizen}\n\n"
+        f"📷 **Fotos:** Direkt unter diesem Eintrag hochladen"
+    )
+
 # -------------------------
 # Bot starten
 # -------------------------
