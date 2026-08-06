@@ -117,16 +117,7 @@ async def grow_erstellen(
         f"✅ Growlog erstellt: {thread.mention}",
         ephemeral=True
     )
-async def grow_erstellen(
-    interaction: discord.Interaction,
-    name: str,
-    sorte: str
-):
-    await interaction.response.send_message(
-        f"🌱 **Neues Grow-Profil erstellt!**\n\n"
-        f"**Pflanze:** {name}\n"
-        f"**Sorte:** {sorte}"
-    )
+
     
 # -------------------------
 # Bot starten
