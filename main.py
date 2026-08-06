@@ -177,6 +177,7 @@ async def grow_erstellen(
 )
 async def eintrag(
     interaction: discord.Interaction,
+    keimdatum: str,
     temperatur: str = "—",
     luftfeuchtigkeit: str = "—",
     giessen: str = "—",
@@ -193,12 +194,21 @@ async def eintrag(
         )
         return
 
+    lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
+
+    alter_text = (
+        f"🌱 **Lebenstag:** {lebenstage}\n"
+        f"📆 **Lebenswoche:** {lebenswoche}\n"
+        if lebenstage is not None
+        else "⚠️ **Pflanzenalter:** Keimdatum ungültig\n"
+    )
     zeitpunkt = int(interaction.created_at.timestamp())
 
     await interaction.response.send_message(
         f"## 📋 Neuer Growlog-Eintrag\n"
         f"📅 **Zeitpunkt:** <t:{zeitpunkt}:F>\n"
         f"👤 **Grower:** {interaction.user.mention}\n\n"
+        f"{alter_text}\n"
         f"🌡️ **Temperatur:** {temperatur}\n"
         f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
         f"🚿 **Gießen:**{giessen}\n"
