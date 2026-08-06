@@ -66,8 +66,57 @@ async def status(interaction: discord.Interaction):
     )
 @bot.tree.command(
     name="grow_erstellen",
-    description="Erstellt ein neues Pflanzenprofil."
+    description="Erstellt ein Pflanzenprofil mit Growlog-Thread."
 )
+async def grow_erstellen(
+    interaction: discord.Interaction,
+    name: str,
+    sorte: str
+):
+    if not isinstance(interaction.channel, discord.TextChannel):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur in einem Textkanal.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.send_message(
+        f"🌱 Growlog für **{name}** wird erstellt …",
+        ephemeral=True
+    )
+      startnachricht = await interaction.channel.send(
+        f"🌱 **Pflanzenprofil: {name}**\n"
+        f"🧬 **Sorte:** {sorte}\n"
+        f"👤 **Grower:** {interaction.user.mention}"
+    )
+
+    thread = await startnachricht.create_thread(
+        name=f"🌱 {name} – Growlog",
+        auto_archive_duration=1440
+    )
+
+    await thread.send(
+        f"## 🌲 Black Forest Genetics Growlog\n\n"
+        f"**Pflanze:** {name}\n"
+        f"**Sorte:** {sorte}\n"
+        f"**Grower:** {interaction.user.mention}\n\n"
+        f"### 📋 Neuer Eintrag\n"
+        f"🌡️ **Temperatur:** —\n"
+        f"💧
+        **Luftfeuchtigkeit:** —\n"
+        f"🚿 **Gießen:** —\n"
+        f"🧪 **Düngung:** —\n"
+        f"⚗️ **pH:** —\n"
+        f"💡 **PPFD / DLI:** —\n"
+        f"📏 **Wuchshöhe:** —\n"
+        f"📝 **Notizen:** —\n"
+        f"📷 **Fotos:** Als Nachricht im Thread hochladen"
+    )
+
+    await interaction.followup.send(
+        f"✅ Growlog erstellt: {thread.mention}",
+        ephemeral=True
+    )
 async def grow_erstellen(
     interaction: discord.Interaction,
     name: str,
