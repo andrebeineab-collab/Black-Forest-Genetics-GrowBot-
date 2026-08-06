@@ -57,13 +57,12 @@ async def hilfe(interaction: discord.Interaction):
     )
 @bot.tree.command(
     name="status",
-    description="Zeigt den Statuinline=s des GrowBots."
+    description="Zeigt den Status des GrowBots."
 )
 async def status(interaction: discord.Interaction):
     await interaction.response.send_message(
         "✅ Black Forest Genetics GrowBot läuft erfolgreich."
     )
-
 
 # -------------------------
 # Bot starten
