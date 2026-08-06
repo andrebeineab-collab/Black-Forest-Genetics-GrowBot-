@@ -141,8 +141,7 @@ async def eintrag(
     wuchshoehe: str = "—",
     notizen: str = "—"
 ):
-    if not
-isinstance(interaction.channel, discord.Thread):
+    if not isinstance(interaction.channel, discord.Thread):
         await interaction.response.send_message(
             "❌ Benutze `/eintrag` innerhalb eines Growlog-Threads.",
             ephemeral=True
