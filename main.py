@@ -84,7 +84,7 @@ async def grow_erstellen(
         f"🌱 Growlog für **{name}** wird erstellt …",
         ephemeral=True
     )
-      startnachricht = await interaction.channel.send(
+    startnachricht = await interaction.channel.send(
         f"🌱 **Pflanzenprofil: {name}**\n"
         f"🧬 **Sorte:** {sorte}\n"
         f"👤 **Grower:** {interaction.user.mention}"
