@@ -102,8 +102,7 @@ async def grow_erstellen(
         f"**Grower:** {interaction.user.mention}\n\n"
         f"### 📋 Neuer Eintrag\n"
         f"🌡️ **Temperatur:** —\n"
-        f"💧
-    **Luftfeuchtigkeit:** —\n"
+        f"💧**Luftfeuchtigkeit:** —\n"
         f"🚿 **Gießen:** —\n"
         f"🧪 **Düngung:** —\n"
         f"⚗️ **pH:** —\n"
