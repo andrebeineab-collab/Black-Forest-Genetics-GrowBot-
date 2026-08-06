@@ -103,7 +103,7 @@ async def grow_erstellen(
         f"### 📋 Neuer Eintrag\n"
         f"🌡️ **Temperatur:** —\n"
         f"💧
-        **Luftfeuchtigkeit:** —\n"
+    **Luftfeuchtigkeit:** —\n"
         f"🚿 **Gießen:** —\n"
         f"🧪 **Düngung:** —\n"
         f"⚗️ **pH:** —\n"
