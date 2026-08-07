@@ -93,17 +93,29 @@ async def status(interaction: discord.Interaction):
     name="grow_erstellen",
     description="Erstellt ein Pflanzenprofil mit Growlog-Thread."
 )
+@app_commands.choices(
+    phase=[
+        app_commands.Choice(name="🌱 Keimung", value="Keimung"),
+        app_commands.Choice(name="🌿 Sämling", value="Sämling"),
+        app_commands.Choice(name="🍃 Wachstum", value="Wachstum"),
+        app_commands.Choice(name="🌸 Blüte", value="Blüte"),
+        app_commands.Choice(name="🌾 Trocknung", value="Trocknung"),
+        app_commands.Choice(name="🫙 Curing", value="Curing"),
+        app_commands.Choice(name="🧬 Klon", value="Klon"),
+    ]
+)
 async def grow_erstellen(
     interaction: discord.Interaction,
     name: str,
     sorte: str,
     breeder: str = "—",
     keimdatum: str = "—",
-    phase: str = "Wachstum",
+    phase: app_commands.Choice[str] = None,
     medium: str = "—",
     topfgroesse: str = "—",
     lampe: str = "—"
 ):
+phase_text = phase.value if phase else "Wachstum"  
     if not isinstance(interaction.channel, discord.TextChannel):
         await interaction.response.send_message(
             "❌ Dieser Befehl funktioniert nur in einem Textkanal.",
@@ -123,7 +135,7 @@ async def grow_erstellen(
         f"📅 **Keimdatum:** {keimdatum}\n"
         f"🌱 **Lebenstag:** {lebenstage}\n"
         f"📆 **Lebenswoche:** {lebenswoche}\n"
-        f"🌿 **Phase:** {phase}\n"
+        f"🌿 **Phase:** {phase_text}\n"
         f"🪴 **Medium:** {medium}\n"
         f"🪣 **Topfgröße:** {topfgroesse}\n"
         f"💡 **Lampe:** {lampe}\n"
@@ -140,7 +152,7 @@ async def grow_erstellen(
         f"**Sorte:** {sorte}\n"
         f"**Breeder:** {breeder}\n"
         f"**Keimdatum:** {keimdatum}\n"
-        f"**Phase:** {phase}\n"
+        f"**Phase:** {phase_text}\n"
         f"**Medium:** {medium}\n"
         f"**Topfgröße:** {topfgroesse}\n"
         f"**Lampe:** {lampe}\n"
