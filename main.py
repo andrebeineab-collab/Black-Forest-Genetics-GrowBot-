@@ -115,7 +115,7 @@ async def grow_erstellen(
     topfgroesse: str = "—",
     lampe: str = "—"
 ):
-phase_text = phase.value if phase else "Wachstum"  
+    phase_text = phase.value if phase else "Wachstum"  
     if not isinstance(interaction.channel, discord.TextChannel):
         await interaction.response.send_message(
             "❌ Dieser Befehl funktioniert nur in einem Textkanal.",
