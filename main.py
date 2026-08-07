@@ -128,8 +128,10 @@ async def grow_erstellen(
         ephemeral=True
     )
     lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
+    pflanzen_id = interaction.channel.id
     startnachricht = await interaction.channel.send(
         f"## 🌱 Pflanzenprofil: {name}\n"
+        f"🆔 **Pflanzen-ID:** `{pflanzen_id}`\n"
         f"🧬 **Sorte:** {sorte}\n"
         f"🏷️ **Breeder:** {breeder}\n"
         f"📅 **Keimdatum:** {keimdatum}\n"
