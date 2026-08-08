@@ -9,7 +9,34 @@ from datetime import datetime, date
 
 def berechne_pflanzenalter(keimdatum: str) -> tuple[int | None, int | None]:
     """Berechnet Lebenstag und Lebenswoche aus dem Keimdatum."""
+DB_NAME = "growbot.db"
 
+
+def init_db():
+    connection = sqlite3.connect(DB_NAME)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS plants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            discord_channel_id INTEGER,
+            discord_thread_id INTEGER,
+            name TEXT NOT NULL,
+            sorte TEXT,
+            breeder TEXT,
+            keimdatum TEXT,
+            phase TEXT,
+            medium TEXT,
+            topfgroesse TEXT,
+            lampe TEXT,
+            grower_id INTEGER,
+            erstellt_am TEXT
+        )
+    """)
+
+    connection.commit()
+    connection.close()
+    
     datum = None
 
     for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
@@ -238,6 +265,7 @@ async def eintrag(
 # -------------------------
 # Bot starten
 # -------------------------
+init_db()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
