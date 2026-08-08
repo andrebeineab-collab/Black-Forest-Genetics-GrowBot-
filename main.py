@@ -230,7 +230,7 @@ async def pflanze_info(interaction: discord.Interaction):
         return
 
     pflanze = lade_pflanze(interaction.channel.id)
-     if pflanze is None:
+    if pflanze is None:
         await interaction.response.send_message(
             "❌ Für diesen Growlog wurde keine Pflanze in der Datenbank gefunden.",
             ephemeral=True
