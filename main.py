@@ -250,7 +250,6 @@ async def pflanze_info(interaction: discord.Interaction):
     ) = pflanze
 
     lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
-lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
 
     alter_text = (
         f"🌱 **Lebenstag:** {lebenstage}\n"
