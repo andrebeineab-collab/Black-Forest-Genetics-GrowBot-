@@ -218,6 +218,60 @@ async def grow_erstellen(
         ephemeral=True
     )
 @bot.tree.command(
+    name="pflanze_info",
+    description="Zeigt das gespeicherte Pflanzenprofil dieses Growlogs."
+)
+async def pflanze_info(interaction: discord.Interaction):
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur innerhalb eines Growlog-Threads.",
+            ephemeral=True
+        )
+        return
+
+    pflanze = lade_pflanze(interaction.channel.id)
+     if pflanze is None:
+        await interaction.response.send_message(
+            "❌ Für diesen Growlog wurde keine Pflanze in der Datenbank gefunden.",
+            ephemeral=True
+        )
+        return
+
+    (
+        name,
+        sorte,
+        breeder,
+        keimdatum,
+        phase,
+        medium,
+        topfgroesse,
+        lampe,
+        grower_id
+    ) = pflanze
+
+    lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
+lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
+
+    alter_text = (
+        f"🌱 **Lebenstag:** {lebenstage}\n"
+        f"📅 **Lebenswoche:** {lebenswoche}\n"
+        if lebenstage is not None
+        else "🌱 **Pflanzenalter:** —\n"
+    )
+
+    await interaction.response.send_message(
+        f"## 🌱 Pflanzenprofil: {name}\n"
+        f"🧬 **Sorte:** {sorte}\n"
+        f"🏷️ **Breeder:** {breeder}\n"
+        f"📅 **Keimdatum:** {keimdatum}\n"
+        f"{alter_text}"
+        f"🌿 **Phase:** {phase}\n"
+        f"🪴 **Medium:** {medium}\n"
+        f"🪣 **Topfgröße:** {topfgroesse}\n"
+        f"💡 **Lampe:** {lampe}\n"
+        f"👤 **Grower:** <@{grower_id}>"
+    )
+@bot.tree.command(
     name="eintrag",
     description="Fügt einen neuen Eintrag zum Growlog hinzu."
 )
@@ -329,6 +383,31 @@ def speichere_pflanze(
 
     connection.commit()
     connection.close()
+def lade_pflanze(thread_id):
+    connection = sqlite3.connect(DB_NAME)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            name,
+            sorte,
+            breeder,
+            keimdatum,
+            phase,
+            medium,
+            topfgroesse,
+            lampe,
+            grower_id
+        FROM plants
+        WHERE discord_thread_id = ?
+        ORDER BY id DESC
+        LIMIT 1
+    """, (thread_id,))
+
+    pflanze = cursor.fetchone()
+    connection.close()
+
+    return pflanze
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
