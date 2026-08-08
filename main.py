@@ -176,7 +176,20 @@ async def grow_erstellen(
         name=f"🌱 {name} – Growlog",
         auto_archive_duration=1440
     )
-
+    speichere_pflanze(
+        interaction.channel.id,
+        thread.id,
+        name,
+        sorte,
+        breeder,
+        keimdatum,
+        phase_text,
+        medium,
+        topfgroesse,
+        lampe,
+        interaction.user.id
+    )
+    
     await thread.send(
         f"## 🌲 Black Forest Genetics Growlog\n\n"
         f"**Pflanze:** {name}\n"
@@ -267,6 +280,55 @@ async def eintrag(
 # Bot starten
 # -------------------------
 init_db()
+def speichere_pflanze(
+    discord_channel_id,
+    discord_thread_id,
+    name,
+    sorte,
+    breeder,
+    keimdatum,
+    phase,
+    medium,
+    topfgroesse,
+    lampe,
+    grower_id
+):
+    connection = sqlite3.connect(DB_NAME)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO plants (
+            discord_channel_id,
+            discord_thread_id,
+            name,
+            sorte,
+            breeder,
+            keimdatum,
+            phase,
+            medium,
+            topfgroesse,
+            lampe,
+            grower_id,
+            erstellt_am
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        discord_channel_id,
+        discord_thread_id,
+        name,
+        sorte,
+        breeder,
+        keimdatum,
+        phase,
+        medium,
+        topfgroesse,
+        lampe,
+        grower_id,
+        datetime.now().isoformat()
+    ))
+
+    connection.commit()
+    connection.close()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
