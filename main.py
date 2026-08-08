@@ -1,5 +1,6 @@
 import os
 import threading
+import sqlite3
 
 from flask import Flask
 import discord
