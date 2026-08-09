@@ -55,7 +55,23 @@ def init_db():
             erstellt_am TEXT
         )
     """)
-
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS entries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            discord_thread_id INTEGER NOT NULL,
+            grower_id INTEGER NOT NULL,
+            zeitpunkt TEXT NOT NULL,
+            temperatur TEXT,
+            luftfeuchtigkeit TEXT,
+            giessen TEXT,
+            duengung TEXT,
+            ph TEXT,
+            ppfd_dli TEXT,
+            wuchshoehe TEXT,
+            notizen TEXT
+        )
+    """)
+    
     connection.commit()
     connection.close()
 
