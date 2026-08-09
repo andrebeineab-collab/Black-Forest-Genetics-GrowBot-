@@ -5,7 +5,10 @@ import sqlite3
 from flask import Flask
 import discord
 from discord import app_commands
-from datetime import datetime, date
+from datetime import datetime, date, timezone
+from zoneinfo import ZoneInfo
+
+BERLIN_TZ = ZoneInfo("Europe/Berlin")
 
 def berechne_pflanzenalter(keimdatum: str) -> tuple[int | None, int | None]:
     """Berechnet Lebenstag und Lebenswoche aus dem Keimdatum."""
@@ -347,7 +350,7 @@ async def eintrag(
     speichere_eintrag(
         interaction.channel.id,
         interaction.user.id,
-        datetime.now().isoformat(),
+        datetime.now(BERLIN_TZ).isoformat(),
         temperatur,
         luftfeuchtigkeit,
         giessen,
@@ -413,9 +416,21 @@ async def historie(interaction: discord.Interaction):
             wuchshoehe,
             notizen
         ) = eintrag
+        zeitpunkt_dt = datetime.fromisoformat(zeitpunkt)
 
+        if zeitpunkt_dt.tzinfo is None:
+            zeitpunkt_dt = zeitpunkt_dt.replace(
+                tzinfo=timezone.utc
+            ).astimezone(BERLIN_TZ)
+        else:
+            zeitpunkt_dt = zeitpunkt_dt.astimezone(BERLIN_TZ)
+
+        zeitpunkt_text = zeitpunkt_dt.strftime(
+            "%d.%m.%Y – %H:%M Uhr"
+        )
+        
         text += (
-            f"📅 **Zeitpunkt:** {zeitpunkt}\n"
+            f"📅 **Zeitpunkt:** {zeitpunkt_text}\n"
             f"🌡️ **Temperatur:** {temperatur}\n"
             f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
             f"🚿 **Gießen:** {giessen}\n"
