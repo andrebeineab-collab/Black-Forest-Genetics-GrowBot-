@@ -344,6 +344,77 @@ async def eintrag(
         f"📝 **Notizen:** {notizen}\n\n"
         f"📷 **Fotos:** Direkt unter diesem Eintrag hochladen"
     )
+@bot.tree.command(
+    name="historie",
+    description="Zeigt die gespeicherten Growlog-Einträge dieses Threads."
+)
+async def historie(interaction: discord.Interaction):
+
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Benutze `/historie` innerhalb eines Growlog-Threads.",
+            ephemeral=True
+        )
+        return
+
+    connection = sqlite3.connect(DB_NAME)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            zeitpunkt,
+            temperatur,
+            luftfeuchtigkeit,
+            giessen,
+            duengung,
+            ph,
+            ppfd_dli,
+            wuchshoehe,
+            notizen
+        FROM entries
+        WHERE discord_thread_id = ?
+        ORDER BY id DESC
+        LIMIT 10
+    """, (interaction.channel.id,))
+
+    eintraege = cursor.fetchall()
+    connection.close()
+
+    if not eintraege:
+        await interaction.response.send_message(
+            "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
+            ephemeral=True
+        )
+        return
+
+    text = "## 📚 Growlog-Historie\n\n"
+        for eintrag in eintraege:
+        (
+            zeitpunkt,
+            temperatur,
+            luftfeuchtigkeit,
+            giessen,
+            duengung,
+            ph,
+            ppfd_dli,
+            wuchshoehe,
+            notizen
+        ) = eintrag
+
+        text += (
+            f"📅 **Zeitpunkt:** {zeitpunkt}\n"
+            f"🌡️ **Temperatur:** {temperatur}\n"
+            f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
+            f"🚿 **Gießen:** {giessen}\n"
+            f"🧪 **Düngung:** {duengung}\n"
+            f"⚗️ **pH:** {ph}\n"
+            f"💡 **PPFD / DLI:** {ppfd_dli}\n"
+            f"📏 **Wuchshöhe:** {wuchshoehe}\n"
+            f"📝 **Notizen:** {notizen}\n"
+            f"\n──────────────\n\n"
+        )
+        await interaction.response.send_message(text)
+
 
 # -------------------------
 # Bot starten
