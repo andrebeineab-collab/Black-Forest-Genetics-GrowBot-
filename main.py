@@ -344,6 +344,19 @@ async def eintrag(
         f"📝 **Notizen:** {notizen}\n\n"
         f"📷 **Fotos:** Direkt unter diesem Eintrag hochladen"
     )
+    speichere_eintrag(
+        interaction.channel.id,
+        interaction.user.id,
+        datetime.now().isoformat(),
+        temperatur,
+        luftfeuchtigkeit,
+        giessen,
+        duengung,
+        ph,
+        ppfd_dli,
+        wuchshoehe,
+        notizen
+    )
 @bot.tree.command(
     name="historie",
     description="Zeigt die gespeicherten Growlog-Einträge dieses Threads."
