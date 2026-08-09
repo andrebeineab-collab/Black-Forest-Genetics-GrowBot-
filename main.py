@@ -388,7 +388,7 @@ async def historie(interaction: discord.Interaction):
         return
 
     text = "## 📚 Growlog-Historie\n\n"
-        for eintrag in eintraege:
+    for eintrag in eintraege:
         (
             zeitpunkt,
             temperatur,
