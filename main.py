@@ -423,6 +423,53 @@ def lade_pflanze(thread_id):
     connection.close()
 
     return pflanze
+def speichere_eintrag(
+    discord_thread_id,
+    grower_id,
+    zeitpunkt,
+    temperatur,
+    luftfeuchtigkeit,
+    giessen,
+    duengung,
+    ph,
+    ppfd_dli,
+    wuchshoehe,
+    notizen
+):
+    connection = sqlite3.connect(DB_NAME)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO entries (
+            discord_thread_id,
+            grower_id,
+            zeitpunkt,
+            temperatur,
+            luftfeuchtigkeit,
+            giessen,
+            duengung,
+            ph,
+            ppfd_dli,
+            wuchshoehe,
+            notizen
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        discord_thread_id,
+        grower_id,
+        zeitpunkt,
+        temperatur,
+        luftfeuchtigkeit,
+        giessen,
+        duengung,
+        ph,
+        ppfd_dli,
+        wuchshoehe,
+        notizen
+    ))
+
+    connection.commit()
+    connection.close()    
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
