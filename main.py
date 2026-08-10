@@ -440,7 +440,7 @@ for eintrag in eintraege:
         lebenstage = None
         lebenswoche = None
 
-        if keimdatum:
+if keimdatum:
     for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
         try:
             keimdatum_dt = datetime.strptime(
