@@ -465,7 +465,7 @@ if keimdatum:
             "%d.%m.%Y – %H:%M Uhr"
         )
         
-        text += (
+    text += (
             f"📅 **Zeitpunkt:** {zeitpunkt_text}\n"
             f"🌡️ **Temperatur:** {temperatur}\n"
             f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
