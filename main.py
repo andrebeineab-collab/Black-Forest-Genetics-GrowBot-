@@ -442,8 +442,8 @@ for eintrag in eintraege:
 
         if keimdatum:
             for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
-            try:
-                keimdatum_dt = datetime.strptime(
+                try:
+                    keimdatum_dt = datetime.strptime(
                     keimdatum.strip(),
                     formatierung
                 ).date()
