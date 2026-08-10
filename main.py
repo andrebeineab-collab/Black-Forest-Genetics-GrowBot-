@@ -394,6 +394,18 @@ async def historie(interaction: discord.Interaction):
     """, (interaction.channel.id,))
 
     eintraege = cursor.fetchall()
+    
+    cursor.execute("""
+    SELECT keimdatum
+    FROM plants
+    WHERE discord_thread_id = ?
+    ORDER BY id DESC
+    LIMIT 1
+""", (interaction.channel.id,))
+
+pflanze = cursor.fetchone()
+keimdatum = pflanze[0] if pflanze else None
+    
     connection.close()
 
     if not eintraege:
@@ -425,7 +437,31 @@ async def historie(interaction: discord.Interaction):
         else:
             zeitpunkt_dt = zeitpunkt_dt.astimezone(BERLIN_TZ)
 
-        zeitpunkt_text = zeitpunkt_dt.strftime(
+        lebenstage = None
+        lebenswoche = None
+
+        if keimdatum:
+    for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
+        try:
+            keimdatum_dt = datetime.strptime(
+                keimdatum.strip(),
+                formatierung
+            ).date()
+
+            lebenstage = (
+                zeitpunkt_dt.date() - keimdatum_dt
+            ).days + 1
+
+            if lebenstage >= 1:
+                lebenswoche = ((lebenstage - 1) // 7) + 1
+            else:
+                lebenstage = None
+
+            break
+
+        except ValueError:
+            continue
+    zeitpunkt_text = zeitpunkt_dt.strftime(
             "%d.%m.%Y – %H:%M Uhr"
         )
         
