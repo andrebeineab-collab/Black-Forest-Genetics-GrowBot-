@@ -416,7 +416,7 @@ if not eintraege:
     return
 
 text = "## 📚 Growlog-Historie\n\n"
-    for eintrag in eintraege:
+for eintrag in eintraege:
     (
         zeitpunkt,
         temperatur,
@@ -428,17 +428,18 @@ text = "## 📚 Growlog-Historie\n\n"
         wuchshoehe,
         notizen
     ) = eintrag
+
     zeitpunkt_dt = datetime.fromisoformat(zeitpunkt)
 
-        if zeitpunkt_dt.tzinfo is None:
-            zeitpunkt_dt = zeitpunkt_dt.replace(
-                tzinfo=timezone.utc
-            ).astimezone(BERLIN_TZ)
-        else:
-            zeitpunkt_dt = zeitpunkt_dt.astimezone(BERLIN_TZ)
+    if zeitpunkt_dt.tzinfo is None:
+        zeitpunkt_dt = zeitpunkt_dt.replace(
+            tzinfo=timezone.utc
+        ).astimezone(BERLIN_TZ)
+    else:
+        zeitpunkt_dt = zeitpunkt_dt.astimezone(BERLIN_TZ)
 
-        lebenstage = None
-        lebenswoche = None
+    lebenstage = None
+    lebenswoche = None
 
 if keimdatum:
     for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
