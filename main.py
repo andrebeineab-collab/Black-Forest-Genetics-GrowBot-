@@ -406,17 +406,17 @@ async def historie(interaction: discord.Interaction):
 pflanze = cursor.fetchone()
 keimdatum = pflanze[0] if pflanze else None
     
-connection.close()
+    connection.close()
 
-if not eintraege:
+    if not eintraege:
         await interaction.response.send_message(
             "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
             ephemeral=True
         )
         return
 
-text = "## 📚 Growlog-Historie\n\n"
-for eintrag in eintraege:
+    text = "## 📚 Growlog-Historie\n\n"
+    for eintrag in eintraege:
         (
             zeitpunkt,
             temperatur,
