@@ -440,24 +440,24 @@ for eintrag in eintraege:
         lebenstage = None
         lebenswoche = None
 
-        if keimdatum:
+            if keimdatum:
             for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
                 try:
                     keimdatum_dt = datetime.strptime(
-                keimdatum.strip(),
-                formatierung
-            ).date()
+                        keimdatum.strip(),
+                        formatierung
+                    ).date()
 
-                lebenstage = (
-                    zeitpunkt_dt.date() - keimdatum_dt
-                ).days + 1
+                    lebenstage = (
+                        zeitpunkt_dt.date() - keimdatum_dt
+                    ).days + 1
 
-                        if lebenstage >= 1:
-                            lebenswoche = ((lebenstage - 1) // 7) + 1
-                        else:
-                            lebenstage = None
+                    if lebenstage >= 1:
+                        lebenswoche = ((lebenstage - 1) // 7) + 1
+                    else:
+                        lebenstage = None
 
-                        break
+                    break
 
                 except ValueError:
                     continue
