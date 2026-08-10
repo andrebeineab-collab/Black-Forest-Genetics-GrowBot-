@@ -406,7 +406,7 @@ async def historie(interaction: discord.Interaction):
 pflanze = cursor.fetchone()
 keimdatum = pflanze[0] if pflanze else None
     
-    connection.close()
+connection.close()
 
     if not eintraege:
         await interaction.response.send_message(
