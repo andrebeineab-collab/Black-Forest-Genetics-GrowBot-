@@ -408,27 +408,27 @@ keimdatum = pflanze[0] if pflanze else None
     
 connection.close()
 
-    if not eintraege:
-        await interaction.response.send_message(
-            "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
-            ephemeral=True
-        )
-        return
+if not eintraege:
+    await interaction.response.send_message(
+        "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
+        ephemeral=True
+    )
+    return
 
-    text = "## 📚 Growlog-Historie\n\n"
+text = "## 📚 Growlog-Historie\n\n"
     for eintrag in eintraege:
-        (
-            zeitpunkt,
-            temperatur,
-            luftfeuchtigkeit,
-            giessen,
-            duengung,
-            ph,
-            ppfd_dli,
-            wuchshoehe,
-            notizen
-        ) = eintrag
-        zeitpunkt_dt = datetime.fromisoformat(zeitpunkt)
+    (
+        zeitpunkt,
+        temperatur,
+        luftfeuchtigkeit,
+        giessen,
+        duengung,
+        ph,
+        ppfd_dli,
+        wuchshoehe,
+        notizen
+    ) = eintrag
+    zeitpunkt_dt = datetime.fromisoformat(zeitpunkt)
 
         if zeitpunkt_dt.tzinfo is None:
             zeitpunkt_dt = zeitpunkt_dt.replace(
