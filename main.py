@@ -408,7 +408,7 @@ keimdatum = pflanze[0] if pflanze else None
     
 connection.close()
 
-    if not eintraege:
+if not eintraege:
         await interaction.response.send_message(
             "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
             ephemeral=True
