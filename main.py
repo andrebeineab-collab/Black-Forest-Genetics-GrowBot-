@@ -448,16 +448,16 @@ for eintrag in eintraege:
                 formatierung
             ).date()
 
-            lebenstage = (
-                zeitpunkt_dt.date() - keimdatum_dt
-            ).days + 1
+                lebenstage = (
+                    zeitpunkt_dt.date() - keimdatum_dt
+                ).days + 1
 
-                    if lebenstage >= 1:
-                        lebenswoche = ((lebenstage - 1) // 7) + 1
-                    else:
-                        lebenstage = None
+                        if lebenstage >= 1:
+                            lebenswoche = ((lebenstage - 1) // 7) + 1
+                        else:
+                            lebenstage = None
 
-                    break
+                        break
 
                 except ValueError:
                     continue
