@@ -415,8 +415,8 @@ if not eintraege:
         )
         return
 
-    text = "## 📚 Growlog-Historie\n\n"
-    for eintrag in eintraege:
+text = "## 📚 Growlog-Historie\n\n"
+for eintrag in eintraege:
         (
             zeitpunkt,
             temperatur,
@@ -441,8 +441,8 @@ if not eintraege:
         lebenswoche = None
 
         if keimdatum:
-    for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
-        try:
+            for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
+                try:
             keimdatum_dt = datetime.strptime(
                 keimdatum.strip(),
                 formatierung
@@ -459,8 +459,8 @@ if not eintraege:
 
             break
 
-        except ValueError:
-            continue
+                except ValueError:
+                    continue
     zeitpunkt_text = zeitpunkt_dt.strftime(
             "%d.%m.%Y – %H:%M Uhr"
         )
@@ -477,7 +477,7 @@ if not eintraege:
             f"📝 **Notizen:** {notizen}\n"
             f"\n──────────────\n\n"
         )
-        await interaction.response.send_message(text)
+    await interaction.response.send_message(text)
 
 
 # -------------------------
