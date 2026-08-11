@@ -403,81 +403,81 @@ async def historie(interaction: discord.Interaction):
     LIMIT 1
 """, (interaction.channel.id,))
 
-pflanze = cursor.fetchone()
-keimdatum = pflanze[0] if pflanze else None
+    pflanze = cursor.fetchone()
+    keimdatum = pflanze[0] if pflanze else None
     
-connection.close()
+    connection.close()
 
-if not eintraege:
-    await interaction.response.send_message(
-        "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
-        ephemeral=True
-    )
-    return
-
-text = "## 📚 Growlog-Historie\n\n"
-for eintrag in eintraege:
-    (
-        zeitpunkt,
-        temperatur,
-        luftfeuchtigkeit,
-        giessen,
-        duengung,
-        ph,
-        ppfd_dli,
-        wuchshoehe,
-        notizen
-    ) = eintrag
-
-    zeitpunkt_dt = datetime.fromisoformat(zeitpunkt)
-
-    if zeitpunkt_dt.tzinfo is None:
-        zeitpunkt_dt = zeitpunkt_dt.replace(
-            tzinfo=timezone.utc
-        ).astimezone(BERLIN_TZ)
-    else:
-        zeitpunkt_dt = zeitpunkt_dt.astimezone(BERLIN_TZ)
-
-    lebenstage = None
-    lebenswoche = None
-
-if keimdatum:
-    for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
-        try:
-            keimdatum_dt = datetime.strptime(
-                keimdatum.strip(),
-                formatierung
-            ).date()
-
-            lebenstage = (
-                zeitpunkt_dt.date() - keimdatum_dt
-            ).days + 1
-
-            if lebenstage >= 1:
-                lebenswoche = ((lebenstage - 1) // 7) + 1
-            else:
-                lebenstage = None
-
-            break
-
-        except ValueError:
-            continue
-    zeitpunkt_text = zeitpunkt_dt.strftime(
-            "%d.%m.%Y – %H:%M Uhr"
+    if not eintraege:
+        await interaction.response.send_message(
+            "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
+            ephemeral=True
         )
+        return
+
+    text = "## 📚 Growlog-Historie\n\n"
+    for eintrag in eintraege:
+        (
+            zeitpunkt,
+            temperatur,
+            luftfeuchtigkeit,
+            giessen,
+            duengung,
+            ph,
+            ppfd_dli,
+            wuchshoehe,
+            notizen
+        ) = eintrag
+
+        zeitpunkt_dt = datetime.fromisoformat(zeitpunkt)
+
+        if zeitpunkt_dt.tzinfo is None:
+            zeitpunkt_dt = zeitpunkt_dt.replace(
+                tzinfo=timezone.utc
+            ).astimezone(BERLIN_TZ)
+        else:
+            zeitpunkt_dt = zeitpunkt_dt.astimezone(BERLIN_TZ)
+
+        lebenstage = None
+        lebenswoche = None
+
+        if keimdatum:
+            for formatierung in ("%d.%m.%Y", "%d.%m.%y"):
+                try:
+                    keimdatum_dt = datetime.strptime(
+                        keimdatum.strip(),
+                        formatierung
+                        ).date()
+
+                    lebenstage = (
+                        zeitpunkt_dt.date() - keimdatum_dt
+                    ).days + 1
+
+                    if lebenstage >= 1:
+                        lebenswoche = ((lebenstage - 1) // 7) + 1
+                    else:
+                        lebenstage = None
+
+                    break
+
+                except ValueError:
+                    continue
+        zeitpunkt_text = zeitpunkt_dt.strftime(
+                "%d.%m.%Y – %H:%M Uhr"
+            )
         
-    text += (
-            f"📅 **Zeitpunkt:** {zeitpunkt_text}\n"
-            f"🌡️ **Temperatur:** {temperatur}\n"
-            f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
-            f"🚿 **Gießen:** {giessen}\n"
-            f"🧪 **Düngung:** {duengung}\n"
-            f"⚗️ **pH:** {ph}\n"
-            f"💡 **PPFD / DLI:** {ppfd_dli}\n"
-            f"📏 **Wuchshöhe:** {wuchshoehe}\n"
-            f"📝 **Notizen:** {notizen}\n"
-            f"\n──────────────\n\n"
-        )
+        text += (
+                f"📅 **Zeitpunkt:** {zeitpunkt_text}\n"
+                f"🌡️ **Temperatur:** {temperatur}\n"
+                f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
+                f"🚿 **Gießen:** {giessen}\n"
+                f"🧪 **Düngung:** {duengung}\n"
+                f"⚗️ **pH:** {ph}\n"
+                f"💡 **PPFD / DLI:** {ppfd_dli}\n"
+                f"📏 **Wuchshöhe:** {wuchshoehe}\n"
+                f"📝 **Notizen:** {notizen}\n"
+                f"\n──────────────\n\n"
+            )
     await interaction.response.send_message(text)
 
 
