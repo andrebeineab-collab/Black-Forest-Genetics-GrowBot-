@@ -656,7 +656,7 @@ async def profil(interaction: discord.Interaction):
         description="Black Forest Genetics • Digitales Pflanzenprofil"
     )
 
-embed.add_field(
+    embed.add_field(
         name="🧬 Sorte",
         value=wert(sorte),
         inline=True
