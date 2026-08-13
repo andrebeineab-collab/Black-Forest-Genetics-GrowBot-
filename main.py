@@ -481,6 +481,8 @@ async def historie(interaction: discord.Interaction):
     await interaction.response.send_message(text)
 
 
+
+
 # -------------------------
 # Bot starten
 # -------------------------
@@ -605,7 +607,108 @@ def speichere_eintrag(
     ))
 
     connection.commit()
-    connection.close()    
+    connection.close() 
+
+@bot.tree.command(
+    name="profil",
+    description="Zeigt das Pflanzenprofil dieses Growlogs an."
+)
+async def profil(interaction: discord.Interaction):
+
+    # Der Command muss in einem Thread ausgeführt werden
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur in einem Growlog-Thread.",
+            ephemeral=True
+        )
+        return
+
+    # Pflanzenprofil anhand der Thread-ID laden
+    pflanze = lade_pflanze(interaction.channel.id)
+
+    if not pflanze:
+        await interaction.response.send_message(
+            "❌ Für diesen Growlog wurde noch kein Pflanzenprofil gespeichert.",
+            ephemeral=True
+        )
+        return
+
+    (
+        name,
+        sorte,
+        breeder,
+        keimdatum,
+        phase,
+        medium,
+        topfgroesse,
+        lampe,
+        grower_id
+    ) = pflanze
+
+    # Leere Werte sauber darstellen
+    def wert(value):
+        if value is None or str(value).strip() == "":
+            return "–"
+        return str(value)
+
+    embed = discord.Embed(
+        title=f"🌱 Pflanzenprofil – {wert(name)}",
+        description="Black Forest Genetics • Digitales Pflanzenprofil"
+    )
+
+embed.add_field(
+        name="🧬 Sorte",
+        value=wert(sorte),
+        inline=True
+    )
+
+    embed.add_field(
+        name="🏷️ Breeder",
+        value=wert(breeder),
+        inline=True
+    )
+
+    embed.add_field(
+        name="📅 Keimdatum",
+        value=wert(keimdatum),
+        inline=True
+    )
+
+    embed.add_field(
+        name="🌿 Phase",
+        value=wert(phase),
+        inline=True
+    )
+
+    embed.add_field(
+        name="🪴 Medium",
+        value=wert(medium),
+        inline=True
+    )
+
+    embed.add_field(
+        name="🪣 Topfgröße",
+        value=wert(topfgroesse),
+        inline=True
+    )
+
+embed.add_field(
+        name="💡 Lampe",
+        value=wert(lampe),
+        inline=True
+    )
+
+    embed.add_field(
+        name="👤 Grower",
+        value=f"<@{grower_id}>",
+        inline=True
+    )
+
+    embed.set_footer(
+        text="Black Forest Genetics • GrowBot"
+    )
+
+    await interaction.response.send_message(embed=embed)
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
