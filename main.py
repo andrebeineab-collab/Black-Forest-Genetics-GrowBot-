@@ -709,6 +709,124 @@ async def profil(interaction: discord.Interaction):
     )
 
     await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(
+    name="pflanze-erstellen",
+    description="Erstellt ein Pflanzenprofil für diesen Growlog."
+)
+@app_commands.describe(
+    name="Name der Pflanze",
+    sorte="Sorte / Strain",
+    breeder="Breeder",
+    keimdatum="Keimdatum, z.B. 11.08.2026",
+    phase="Aktuelle Phase",
+    medium="Medium, z.B. Erde oder Coco",
+    topfgroesse="Topfgröße, z.B. 11 L",
+    lampe="Verwendete Lampe"
+)
+async def pflanze_erstellen(
+    interaction: discord.Interaction,
+    name: str,
+    sorte: str,
+    breeder: str,
+    keimdatum: str,
+    phase: str,
+    medium: str,
+    topfgroesse: str,
+    lampe: str
+):
+    # Nur innerhalb eines Growlog-Threads
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur in einem Growlog-Thread.",
+            ephemeral=True
+        )
+        return
+
+    # Prüfen, ob bereits ein Profil existiert
+    vorhandene_pflanze = lade_pflanze(interaction.channel.id)
+
+    if vorhandene_pflanze:
+        await interaction.response.send_message(
+            "⚠️ Für diesen Growlog existiert bereits ein Pflanzenprofil.",
+            ephemeral=True
+        )
+        return
+
+    # Profil in der Datenbank speichern
+    speichere_pflanze(
+
+        interaction.channel.parent_id,
+        interaction.channel.id,
+        name,
+        sorte,
+        breeder,
+        keimdatum,
+        phase,
+        medium,
+        topfgroesse,
+        lampe,
+        interaction.user.id
+    )
+
+    embed = discord.Embed(
+        title=f"🌱 Pflanzenprofil – {name}",
+        description="Pflanzenprofil erfolgreich erstellt."
+    )
+
+    embed.add_field(
+        name="🧬 Sorte",
+        value=sorte,
+        inline=True
+    )
+
+    embed.add_field(
+        name="🏷️ Breeder",
+        value=breeder,
+        inline=True
+    )
+
+    embed.add_field(
+        name="📅 Keimdatum",
+        value=keimdatum,
+        inline=True
+    )
+
+    embed.add_field(
+        name="🌿 Phase",
+        value=phase,
+        inline=True
+    )
+
+    embed.add_field(
+        name="🪴 Medium",
+        value=medium,
+        inline=True
+    )
+
+    embed.add_field(
+        name="🪣 Topfgröße",
+        value=topfgroesse,
+        inline=True
+    )
+
+    embed.add_field(
+        name="💡 Lampe",
+        value=lampe,
+        inline=True
+    )
+
+    embed.add_field(
+        name="👤 Grower",
+        value=interaction.user.mention,
+        inline=True
+    )
+
+    embed.set_footer(
+        text="Black Forest Genetics • GrowBot"
+    )
+
+    await interaction.response.send_message(embed=embed)
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
