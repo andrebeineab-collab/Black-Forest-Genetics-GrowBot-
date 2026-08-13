@@ -692,7 +692,7 @@ async def profil(interaction: discord.Interaction):
         inline=True
     )
 
-embed.add_field(
+    embed.add_field(
         name="💡 Lampe",
         value=wert(lampe),
         inline=True
