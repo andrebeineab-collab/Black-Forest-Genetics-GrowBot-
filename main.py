@@ -561,6 +561,37 @@ def lade_pflanze(thread_id):
     connection.close()
 
     return pflanze
+
+def aktualisiere_pflanze(
+    thread_id,
+    phase,
+    medium,
+    topfgroesse,
+    lampe
+):
+    connection = sqlite3.connect(DB_NAME)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        UPDATE plants
+        SET
+            phase = ?,
+            medium = ?,
+            topfgroesse = ?,
+            lampe = ?
+        WHERE discord_thread_id = ?
+    """, (
+        phase,
+        medium,
+        topfgroesse,
+        lampe,
+        thread_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+
 def speichere_eintrag(
     discord_thread_id,
     grower_id,
@@ -819,6 +850,104 @@ async def pflanze_erstellen(
     embed.add_field(
         name="👤 Grower",
         value=interaction.user.mention,
+        inline=True
+    )
+
+    embed.set_footer(
+        text="Black Forest Genetics • GrowBot"
+    )
+
+    await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(
+    name="profil-bearbeiten",
+    description="Bearbeitet das Pflanzenprofil dieses Growlogs."
+)
+@app_commands.describe(
+    phase="Neue Phase, z.B. Wachstum oder Blüte",
+    medium="Neues Medium",
+    topfgroesse="Neue Topfgröße",
+    lampe="Neue Lampe"
+)
+async def profil_bearbeiten(
+    interaction: discord.Interaction,
+    phase: str = None,
+    medium: str = None,
+    topfgroesse: str = None,
+    lampe: str = None
+):
+    # Nur innerhalb eines Growlog-Threads
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur in einem Growlog-Thread.",
+            ephemeral=True
+        )
+        return
+         # Vorhandenes Pflanzenprofil laden
+    pflanze = lade_pflanze(interaction.channel.id)
+
+    if not pflanze:
+        await interaction.response.send_message(
+            "❌ Für diesen Growlog wurde noch kein Pflanzenprofil gespeichert.",
+            ephemeral=True
+        )
+        return
+
+    (
+        name,
+        sorte,
+        breeder,
+        keimdatum,
+        alte_phase,
+        altes_medium,
+        alte_topfgroesse,
+        alte_lampe,
+        grower_id
+    ) = pflanze
+
+ # Nicht angegebene Werte bleiben unverändert
+    neue_phase = phase if phase is not None else alte_phase
+    neues_medium = medium if medium is not None else altes_medium
+    neue_topfgroesse = (
+        topfgroesse if topfgroesse is not None else alte_topfgroesse
+    )
+    neue_lampe = lampe if lampe is not None else alte_lampe
+
+    # Änderungen speichern
+    aktualisiere_pflanze(
+        interaction.channel.id,
+        neue_phase,
+        neues_medium,
+        neue_topfgroesse,
+        neue_lampe
+    )
+
+    embed = discord.Embed(
+        title=f"✅ Pflanzenprofil aktualisiert – {name}",
+        description="Die Änderungen wurden erfolgreich gespeichert."
+    )
+
+    embed.add_field(
+        name="🌿 Phase",
+        value=neue_phase or "–",
+        inline=True
+    )
+
+    embed.add_field(
+        name="🪴 Medium",
+        value=neues_medium or "–",
+        inline=True
+    )
+
+    embed.add_field(
+        name="🪣 Topfgröße",
+        value=neue_topfgroesse or "–",
+        inline=True
+    )
+
+    embed.add_field(
+        name="💡 Lampe",
+        value=neue_lampe or "–",
         inline=True
     )
 
