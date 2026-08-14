@@ -715,6 +715,20 @@ async def profil(interaction: discord.Interaction):
         inline=True
     )
 
+    lebenstag, lebenswoche = berechne_pflanzenalter(keimdatum)
+
+    embed.add_field(
+        name="🌱 Lebenstag",
+        value=str(lebenstag) if lebenstag is not None else "–",
+        inline=True
+    )
+
+    embed.add_field(
+        name="📅 Lebenswoche",
+        value=str(lebenswoche) if lebenswoche is not None else "–",
+        inline=True
+    )
+
     embed.add_field(
         name="🌿 Phase",
         value=wert(phase),
