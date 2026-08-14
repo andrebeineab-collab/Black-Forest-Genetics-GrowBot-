@@ -766,6 +766,63 @@ async def profil(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 @bot.tree.command(
+    name="phase",
+    description="Ändert die aktuelle Phase der Pflanze."
+)
+@app_commands.describe(
+    phase="Neue Pflanzenphase"
+)
+@app_commands.choices(
+    phase=[
+        app_commands.Choice(name="🌱 Keimung", value="Keimung"),
+    app_commands.Choice(name="🌿 Sämling", value="Sämling"),
+    app_commands.Choice(name="🍃 Wachstum", value="Wachstum"),
+    app_commands.Choice(name="🌸 Blüte", value="Blüte"),
+    app_commands.Choice(name="🌾 Trocknung", value="Trocknung"),
+    app_commands.Choice(name="🫙 Curing", value="Curing"),
+    app_commands.Choice(name="🧬 Klon", value="Klon"),
+    ]
+)
+async def phase(
+    interaction: discord.Interaction,
+    phase: app_commands.Choice[str]
+):
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+             "❌ Dieser Befehl funktioniert nur in einem Growlog-Thread.",
+            ephemeral=True
+        )
+        return
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        UPDATE plants
+        SET phase = %s
+        WHERE discord_thread_id = %s
+        """,
+        (phase.value, interaction.channel.id)
+    )
+
+    geaendert = cursor.rowcount
+    connection.commit()
+    connection.close()
+
+    if geaendert == 0:
+        await interaction.response.send_message(
+            "❌ Für diesen Growlog wurde kein Pflanzenprofil gefunden.",
+            ephemeral=True
+        )
+        return
+        await interaction.response.send_message(
+        f"🌿 **Pflanzenphase aktualisiert**\n\n"
+        f"Neue Phase: **{phase.value}**",
+        ephemeral=True
+        )
+
+@bot.tree.command(
     name="pflanze-erstellen",
     description="Erstellt ein Pflanzenprofil für diesen Growlog."
 )
