@@ -826,7 +826,7 @@ connection.close()
     
     
 
-    if geaendert == 0:
+if geaendert == 0:
         await interaction.followup.send(
             "❌ Für diesen Growlog wurde kein Pflanzenprofil gefunden.",
             ephemeral=True
