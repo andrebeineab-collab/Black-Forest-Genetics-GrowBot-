@@ -793,7 +793,9 @@ async def phase(
             ephemeral=True
         )
         return
-
+   
+    await interaction.response.defer(ephemeral=True)
+    
     connection = get_db_connection()
     cursor = connection.cursor()
 
@@ -811,12 +813,12 @@ async def phase(
     connection.close()
 
     if geaendert == 0:
-        await interaction.response.send_message(
+        await interaction.followup.send(
             "❌ Für diesen Growlog wurde kein Pflanzenprofil gefunden.",
             ephemeral=True
         )
         return
-        await interaction.response.send_message(
+        await interaction.followup.send(
         f"🌿 **Pflanzenphase aktualisiert**\n\n"
         f"Neue Phase: **{phase.value}**",
         ephemeral=True
