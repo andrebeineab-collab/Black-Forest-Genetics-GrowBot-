@@ -795,22 +795,36 @@ async def phase(
         return
    
     await interaction.response.defer(ephemeral=True)
+
+    print("PHASE 1: defer abgeschlossen", flush=True)
+
+print("PHASE 2: verbinde Datenbank", flush=True)
+connection = get_db_connection()
+
+print("PHASE 3: Datenbank verbunden", flush=True)
+cursor = connection.cursor()
+
+print("PHASE 4: starte UPDATE", flush=True)
+cursor.execute(
+    """
+    UPDATE plants
+    SET phase = %s
+    WHERE discord_thread_id = %s
+    """,
+    (phase.value, interaction.channel.id)
+)
+
+print("PHASE 5: UPDATE fertig", flush=True)
+
+geaendert = cursor.rowcount
+
+print("PHASE 6: commit", flush=True)
+connection.commit()
+
+print("PHASE 7: commit fertig", flush=True)
+connection.close()
     
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    cursor.execute(
-        """
-        UPDATE plants
-        SET phase = %s
-        WHERE discord_thread_id = %s
-        """,
-        (phase.value, interaction.channel.id)
-    )
-
-    geaendert = cursor.rowcount
-    connection.commit()
-    connection.close()
+    
 
     if geaendert == 0:
         await interaction.followup.send(
