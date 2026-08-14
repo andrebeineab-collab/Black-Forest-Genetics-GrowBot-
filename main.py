@@ -82,9 +82,9 @@ cursor.execute("""
         )
     """)
 
-    connection.commit()
-    cursor.close()
-    connection.close()
+connection.commit()
+cursor.close()
+connection.close()
 
 # -------------------------
 # Webserver für Render
