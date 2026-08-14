@@ -798,45 +798,45 @@ async def phase(
 
     print("PHASE 1: defer abgeschlossen", flush=True)
 
-print("PHASE 2: verbinde Datenbank", flush=True)
-connection = get_db_connection()
+    print("PHASE 2: verbinde Datenbank", flush=True)
+    connection = get_db_connection()
 
-print("PHASE 3: Datenbank verbunden", flush=True)
-cursor = connection.cursor()
+    print("PHASE 3: Datenbank verbunden", flush=True)
+    cursor = connection.cursor()
 
-print("PHASE 4: starte UPDATE", flush=True)
-cursor.execute(
-    """
-    UPDATE plants
-    SET phase = %s
-    WHERE discord_thread_id = %s
-    """,
-    (phase.value, interaction.channel.id)
-)
+    print("PHASE 4: starte UPDATE", flush=True)
+    cursor.execute(
+        """
+        UPDATE plants
+        SET phase = %s
+        WHERE discord_thread_id = %s
+        """,
+        (phase.value, interaction.channel.id)
+    )
 
-print("PHASE 5: UPDATE fertig", flush=True)
+    print("PHASE 5: UPDATE fertig", flush=True)
 
-geaendert = cursor.rowcount
+    geaendert = cursor.rowcount
 
-print("PHASE 6: commit", flush=True)
-connection.commit()
+    print("PHASE 6: commit", flush=True)
+    connection.commit()
 
-print("PHASE 7: commit fertig", flush=True)
-connection.close()
+    print("PHASE 7: commit fertig", flush=True)
+    connection.close()
     
     
 
-if geaendert == 0:
-        await interaction.followup.send(
-            "❌ Für diesen Growlog wurde kein Pflanzenprofil gefunden.",
-            ephemeral=True
-        )
-        return
-        await interaction.followup.send(
-        f"🌿 **Pflanzenphase aktualisiert**\n\n"
-        f"Neue Phase: **{phase.value}**",
-        ephemeral=True
-        )
+    if geaendert == 0:
+            await interaction.followup.send(
+                "❌ Für diesen Growlog wurde kein Pflanzenprofil gefunden.",
+                ephemeral=True
+            )
+            return
+    await interaction.followup.send(
+    f"🌿 **Pflanzenphase aktualisiert**\n\n"
+    f"Neue Phase: **{phase.value}**",
+    ephemeral=True
+    )
 
 @bot.tree.command(
     name="pflanze-erstellen",
