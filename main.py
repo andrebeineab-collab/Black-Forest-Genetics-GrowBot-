@@ -381,6 +381,7 @@ async def historie(interaction: discord.Interaction):
             ephemeral=True
         )
         return
+    await interaction.response.defer(ephemeral=True)
 
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -418,7 +419,7 @@ async def historie(interaction: discord.Interaction):
     connection.close()
 
     if not eintraege:
-        await interaction.response.send_message(
+        await interaction.followup.send(
             "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
             ephemeral=True
         )
@@ -487,7 +488,7 @@ async def historie(interaction: discord.Interaction):
                 f"📝 **Notizen:** {notizen}\n"
                 f"\n──────────────\n\n"
             )
-    await interaction.response.send_message(text)
+    await interaction.followup.send(text, ephemeral=True)
 
 
 
