@@ -65,26 +65,26 @@ def init_db():
         )
     """)
 
-cursor.execute("""
-        CREATE TABLE IF NOT EXISTS entries (
-            id BIGSERIAL PRIMARY KEY,
-            discord_thread_id BIGINT NOT NULL,
-            grower_id BIGINT NOT NULL,
-            zeitpunkt TEXT NOT NULL,
-            temperatur TEXT,
-            luftfeuchtigkeit TEXT,
-            giessen TEXT,
-            duengung TEXT,
-            ph TEXT,
-            ppfd_dli TEXT,
-            wuchshoehe TEXT,
-            notizen TEXT
-        )
-    """)
+    cursor.execute("""
+            CREATE TABLE IF NOT EXISTS entries (
+                id BIGSERIAL PRIMARY KEY,
+                discord_thread_id BIGINT NOT NULL,
+                grower_id BIGINT NOT NULL,
+                zeitpunkt TEXT NOT NULL,
+                temperatur TEXT,
+                luftfeuchtigkeit TEXT,
+                giessen TEXT,
+                duengung TEXT,
+                ph TEXT,
+                ppfd_dli TEXT,
+                wuchshoehe TEXT,
+                notizen TEXT
+            )
+        """)
 
-connection.commit()
-cursor.close()
-connection.close()
+    connection.commit()
+    cursor.close()
+    connection.close()
 
 # -------------------------
 # Webserver für Render
