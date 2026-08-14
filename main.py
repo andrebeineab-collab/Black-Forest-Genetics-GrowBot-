@@ -1,6 +1,6 @@
 import os
 import threading
-import sqlite3
+import psycopg2
 
 from flask import Flask
 import discord
@@ -34,18 +34,24 @@ def berechne_pflanzenalter(keimdatum: str) -> tuple[int | None, int | None]:
     lebenswoche = ((lebenstage - 1) // 7) + 1
 
     return lebenstage, lebenswoche
-DB_NAME = "growbot.db"
+def get_db_connection():
+    database_url = os.getenv("DATABASE_URL")
+
+    if not database_url:
+        raise RuntimeError("DATABASE_URL wurde nicht gefunden.")
+
+    return psycopg2.connect(database_url)
 
 
 def init_db():
-    connection = sqlite3.connect(DB_NAME)
+    connection = get_db_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS plants (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            discord_channel_id INTEGER,
-            discord_thread_id INTEGER,
+            id BIGSERIAL PRIMARY KEY,
+            discord_channel_id BIGINT,
+            discord_thread_id BIGINT,
             name TEXT NOT NULL,
             sorte TEXT,
             breeder TEXT,
@@ -54,15 +60,16 @@ def init_db():
             medium TEXT,
             topfgroesse TEXT,
             lampe TEXT,
-            grower_id INTEGER,
+            grower_id BIGINT,
             erstellt_am TEXT
         )
     """)
-    cursor.execute("""
+
+cursor.execute("""
         CREATE TABLE IF NOT EXISTS entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            discord_thread_id INTEGER NOT NULL,
-            grower_id INTEGER NOT NULL,
+            id BIGSERIAL PRIMARY KEY,
+            discord_thread_id BIGINT NOT NULL,
+            grower_id BIGINT NOT NULL,
             zeitpunkt TEXT NOT NULL,
             temperatur TEXT,
             luftfeuchtigkeit TEXT,
@@ -74,8 +81,9 @@ def init_db():
             notizen TEXT
         )
     """)
-    
+
     connection.commit()
+    cursor.close()
     connection.close()
 
 # -------------------------
@@ -91,6 +99,7 @@ def home():
 def run_webserver():
     port = int(os.getenv("PORT", "10000"))
     web_app.run(host="0.0.0.0", port=port)
+
 
 # -------------------------
 # Discord Bot
@@ -373,7 +382,7 @@ async def historie(interaction: discord.Interaction):
         )
         return
 
-    connection = sqlite3.connect(DB_NAME)
+    connection = get_db_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -388,7 +397,7 @@ async def historie(interaction: discord.Interaction):
             wuchshoehe,
             notizen
         FROM entries
-        WHERE discord_thread_id = ?
+        WHERE discord_thread_id = %s
         ORDER BY id DESC
         LIMIT 10
     """, (interaction.channel.id,))
@@ -398,7 +407,7 @@ async def historie(interaction: discord.Interaction):
     cursor.execute("""
     SELECT keimdatum
     FROM plants
-    WHERE discord_thread_id = ?
+    WHERE discord_thread_id = %s
     ORDER BY id DESC
     LIMIT 1
 """, (interaction.channel.id,))
@@ -500,7 +509,7 @@ def speichere_pflanze(
     lampe,
     grower_id
 ):
-    connection = sqlite3.connect(DB_NAME)
+    connection = get_db_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -518,7 +527,7 @@ def speichere_pflanze(
             grower_id,
             erstellt_am
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         discord_channel_id,
         discord_thread_id,
@@ -537,7 +546,7 @@ def speichere_pflanze(
     connection.commit()
     connection.close()
 def lade_pflanze(thread_id):
-    connection = sqlite3.connect(DB_NAME)
+    connection = get_db_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -552,7 +561,7 @@ def lade_pflanze(thread_id):
             lampe,
             grower_id
         FROM plants
-        WHERE discord_thread_id = ?
+        WHERE discord_thread_id = %s
         ORDER BY id DESC
         LIMIT 1
     """, (thread_id,))
@@ -569,17 +578,17 @@ def aktualisiere_pflanze(
     topfgroesse,
     lampe
 ):
-    connection = sqlite3.connect(DB_NAME)
+    connection = get_db_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
         UPDATE plants
         SET
-            phase = ?,
-            medium = ?,
-            topfgroesse = ?,
-            lampe = ?
-        WHERE discord_thread_id = ?
+            phase = %s,
+            medium = %s,
+            topfgroesse = %s,
+            lampe = %s
+        WHERE discord_thread_id = %s
     """, (
         phase,
         medium,
@@ -605,7 +614,7 @@ def speichere_eintrag(
     wuchshoehe,
     notizen
 ):
-    connection = sqlite3.connect(DB_NAME)
+    connection = get_db_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -622,7 +631,7 @@ def speichere_eintrag(
             wuchshoehe,
             notizen
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         discord_thread_id,
         grower_id,
