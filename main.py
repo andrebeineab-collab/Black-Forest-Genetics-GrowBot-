@@ -814,6 +814,17 @@ async def phase(
 
     print("PHASE 3: Datenbank verbunden", flush=True)
     cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT phase
+        FROM plants
+        WHERE discord_thread_id = %s
+        """,
+        (interaction.channel.id,)
+    )
+
+    plant = cursor.fetchone()
+    alte_phase = plant[0] if plant else None
 
     print("PHASE 4: starte UPDATE", flush=True)
     cursor.execute(
@@ -828,6 +839,26 @@ async def phase(
     print("PHASE 5: UPDATE fertig", flush=True)
 
     geaendert = cursor.rowcount
+    if geaendert > 0 and alte_phase != phase.value:
+        cursor.execute(
+            """
+            INSERT INTO phase_history (
+                discord_thread_id,
+                grower_id,
+                alte_phase,
+                neue_phase,
+                geaendert_am
+            )
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (
+                interaction.channel.id,
+                interaction.user.id,
+                alte_phase,
+                phase.value,
+                datetime.now(BERLIN_TZ).isoformat()
+            )
+        )
 
     print("PHASE 6: commit", flush=True)
     connection.commit()
