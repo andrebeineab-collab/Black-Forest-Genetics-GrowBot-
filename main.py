@@ -881,6 +881,69 @@ async def phase(
     )
 
 @bot.tree.command(
+    name="phasenhistorie",
+    description="Zeigt die gespeicherten Phasenwechsel dieses Growlogs."
+)
+async def phasenhistorie(interaction: discord.Interaction):
+
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur in einem Growlog-Thread.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        SELECT alte_phase, neue_phase, geaendert_am
+        FROM phase_history
+        WHERE discord_thread_id = %s
+        ORDER BY id ASC
+        """,
+        (interaction.channel.id,)
+    )
+
+    eintraege = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    if not eintraege:
+        await interaction.followup.send(
+            "📭 Für diesen Growlog gibt es noch keine gespeicherten Phasenwechsel.",
+            ephemeral=True
+        )
+        return
+
+    text = "## 🌿 Phasenhistorie\n\n"
+    for alte_phase, neue_phase, geaendert_am in eintraege:
+
+        try:
+            zeitpunkt = datetime.fromisoformat(geaendert_am)
+
+            if zeitpunkt.tzinfo is None:
+                zeitpunkt = zeitpunkt.replace(tzinfo=timezone.utc)
+
+            zeitpunkt = zeitpunkt.astimezone(BERLIN_TZ)
+            zeit_text = zeitpunkt.strftime("%d.%m.%Y – %H:%M Uhr")
+
+        except (ValueError, TypeError):
+            zeit_text = geaendert_am
+
+        text += (
+            f"🌱 **{alte_phase or '-'} → {neue_phase}**\n"
+            f"🕒 {zeit_text}\n\n"
+        )
+        await interaction.followup.send(
+        text,
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="pflanze-erstellen",
     description="Erstellt ein Pflanzenprofil für diesen Growlog."
 )
