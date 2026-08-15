@@ -92,6 +92,27 @@ def init_db():
             geaendert_am TEXT NOT NULL
         )
     """)
+    
+    # Pflanzenprofil erweitern
+    cursor.execute("""
+        ALTER TABLE plants
+        ADD COLUMN IF NOT EXISTS genetik_typ TEXT
+    """)
+
+    cursor.execute("""
+        ALTER TABLE plants
+        ADD COLUMN IF NOT EXISTS anbaumethode TEXT
+    """)
+
+    cursor.execute("""
+        ALTER TABLE plants
+        ADD COLUMN IF NOT EXISTS lichtzyklus TEXT
+    """)
+
+    cursor.execute("""
+        ALTER TABLE plants
+        ADD COLUMN IF NOT EXISTS status TEXT
+    """)
 
     connection.commit()
     cursor.close()
