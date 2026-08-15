@@ -899,6 +899,7 @@ async def phasenhistorie(interaction: discord.Interaction):
     cursor = connection.cursor()
 
     cursor.execute(
+        """
         SELECT alte_phase, neue_phase, geaendert_am
         FROM phase_history
         WHERE discord_thread_id = %s
