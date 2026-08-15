@@ -82,6 +82,17 @@ def init_db():
             )
         """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS phase_history (
+            id BIGSERIAL PRIMARY KEY,
+            discord_thread_id BIGINT NOT NULL,
+            grower_id BIGINT,
+            alte_phase TEXT,
+            neue_phase TEXT NOT NULL,
+            geaendert_am TEXT NOT NULL
+        )
+    """)
+
     connection.commit()
     cursor.close()
     connection.close()
