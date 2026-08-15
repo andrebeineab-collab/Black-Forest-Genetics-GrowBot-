@@ -945,6 +945,98 @@ async def phasenhistorie(interaction: discord.Interaction):
     )
 
 @bot.tree.command(
+    name="phasendauer",
+    description="Zeigt die Dauer der gespeicherten Pflanzenphasen."
+)
+async def phasendauer(interaction: discord.Interaction):
+
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur in einem Growlog-Thread.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT alte_phase, neue_phase, geaendert_am
+        FROM phase_history
+        WHERE discord_thread_id = %s
+        ORDER BY id ASC
+        """,
+        (interaction.channel.id,)
+    )
+
+    eintraege = cursor.fetchall()
+
+    cursor.execute(
+        """
+        SELECT phase
+        FROM plants
+        WHERE discord_thread_id = %s
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (interaction.channel.id,)
+    )
+
+    aktuelle_pflanze = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+    if not eintraege:
+        await interaction.followup.send(
+            "📭 Noch keine Phasendaten vorhanden.",
+            ephemeral=True
+        )
+        return
+
+    text = "## ⏱️ Phasendauer\n\n"
+
+    for index, eintrag in enumerate(eintraege):
+        alte_phase, neue_phase, geaendert_am = eintrag
+
+        try:
+            start = datetime.fromisoformat(geaendert_am)
+
+            if start.tzinfo is None:
+                start = start.replace(tzinfo=timezone.utc)
+
+            start = start.astimezone(BERLIN_TZ)
+
+            if index + 1 < len(eintraege):
+                ende = datetime.fromisoformat(eintraege[index + 1][2])
+
+                if ende.tzinfo is None:
+                    ende = ende.replace(tzinfo=timezone.utc)
+
+                ende = ende.astimezone(BERLIN_TZ)
+            else:
+                ende = datetime.now(BERLIN_TZ)
+
+            dauer = ende - start
+            tage = dauer.days
+            stunden = dauer.seconds // 3600
+
+            text += (
+                f"🌱 **{neue_phase}**\n"
+                f"⏱️ {tage} Tage, {stunden} Stunden\n\n"
+            )
+
+        except (ValueError, TypeError):
+            continue
+
+    await interaction.followup.send(
+        text,
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="pflanze-erstellen",
     description="Erstellt ein Pflanzenprofil für diesen Growlog."
 )
