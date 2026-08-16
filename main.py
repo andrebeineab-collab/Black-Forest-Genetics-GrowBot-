@@ -1229,6 +1229,13 @@ async def pflanze_erstellen(
     lichtzyklus="Neuer Lichtzyklus",
     status="Neuer Status"
 )
+@app_commands.choices(
+    status=[
+        app_commands.Choice(name="Aktiv", value="Aktiv"),
+        app_commands.Choice(name="Pausiert", value="Pausiert"),
+        app_commands.Choice(name="Abgeschlossen", value="Abgeschlossen")
+    ]
+)
 async def profil_bearbeiten(
     interaction: discord.Interaction,
     phase: str = None,
