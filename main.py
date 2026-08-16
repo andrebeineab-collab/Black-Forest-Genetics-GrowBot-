@@ -1306,64 +1306,64 @@ aktualisiere_pflanze(
     neuer_status
 )
 
-    embed = discord.Embed(
-        title=f"✅ Pflanzenprofil aktualisiert – {name}",
-        description="Die Änderungen wurden erfolgreich gespeichert."
-    )
+embed = discord.Embed(
+    title=f"✅ Pflanzenprofil aktualisiert – {name}",
+    description="Die Änderungen wurden erfolgreich gespeichert."
+)
 
-    embed.add_field(
-        name="🌿 Phase",
-        value=neue_phase or "–",
-        inline=True
-    )
+embed.add_field(
+    name="🌿 Phase",
+    value=neue_phase or "–",
+    inline=True
+)
 
-    embed.add_field(
-        name="🪴 Medium",
-        value=neues_medium or "–",
-        inline=True
-    )
+embed.add_field(
+    name="🪴 Medium",
+    value=neues_medium or "–",
+    inline=True
+)
 
-    embed.add_field(
-        name="🪣 Topfgröße",
-        value=neue_topfgroesse or "–",
-        inline=True
-    )
+embed.add_field(
+    name="🪣 Topfgröße",
+    value=neue_topfgroesse or "–",
+    inline=True
+)
 
-    embed.add_field(
-        name="💡 Lampe",
-        value=neue_lampe or "–",
-        inline=True
-    )
+embed.add_field(
+    name="💡 Lampe",
+    value=neue_lampe or "–",
+    inline=True
+)
 
-    embed.add_field(
-        name="🧬 Genetik-Typ",
-        value=neuer_genetik_typ or "-",
-        inline=True
-    )
+embed.add_field(
+    name="🧬 Genetik-Typ",
+    value=neuer_genetik_typ or "-",
+    inline=True
+)
 
-    embed.add_field(
-        name="🌱 Anbaumethode",
-        value=neue_anbaumethode or "-",
-        inline=True
-    )
+embed.add_field(
+    name="🌱 Anbaumethode",
+    value=neue_anbaumethode or "-",
+    inline=True
+)
 
-    embed.add_field(
-        name="☀️ Lichtzyklus",
-        value=neuer_lichtzyklus or "-",
-        inline=True
-    )
+embed.add_field(
+    name="☀️ Lichtzyklus",
+    value=neuer_lichtzyklus or "-",
+    inline=True
+)
 
-    embed.add_field(
-        name="📊 Status",
-        value=neuer_status or "-",
-        inline=True
-    )
+embed.add_field(
+    name="📊 Status",
+    value=neuer_status or "-",
+    inline=True
+)
 
-    embed.set_footer(
-        text="Black Forest Genetics • GrowBot"
-    )
+embed.set_footer(
+    text="Black Forest Genetics • GrowBot"
+)
 
-    await interaction.response.send_message(embed=embed)
+await interaction.response.send_message(embed=embed)
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
