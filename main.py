@@ -546,8 +546,7 @@ def speichere_pflanze(
     lichtzyklus,
     status
 ):
-    connection =
-    get_db_connection()
+    connection =get_db_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
