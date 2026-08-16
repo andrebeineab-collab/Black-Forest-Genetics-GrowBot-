@@ -1247,123 +1247,123 @@ async def profil_bearbeiten(
             ephemeral=True
         )
         return
-         # Vorhandenes Pflanzenprofil laden
-    pflanze = lade_pflanze(interaction.channel.id)
+             # Vorhandenes Pflanzenprofil laden
+        pflanze = lade_pflanze(interaction.channel.id)
 
-    if not pflanze:
-        await interaction.response.send_message(
-            "❌ Für diesen Growlog wurde noch kein Pflanzenprofil gespeichert.",
-            ephemeral=True
-        )
-        return
+        if not pflanze:
+            await interaction.response.send_message(
+                "❌ Für diesen Growlog wurde noch kein Pflanzenprofil gespeichert.",
+                ephemeral=True
+            )
+            return
 
-    (
-    name,
-    sorte,
-    breeder,
-    keimdatum,
-    alte_phase,
-    altes_medium,
-    alte_topfgroesse,
-    alte_lampe,
-    grower_id,
-    alter_genetik_typ,
-    alte_anbaumethode,
-    alter_lichtzyklus,
-    alter_status
-) = pflanze
+        (
+        name,
+        sorte,
+        breeder,
+        keimdatum,
+        alte_phase,
+        altes_medium,
+        alte_topfgroesse,
+        alte_lampe,
+        grower_id,
+        alter_genetik_typ,
+        alte_anbaumethode,
+        alter_lichtzyklus,
+        alter_status
+    ) = pflanze
 
- # Nicht angegebene Werte bleiben unverändert
-neue_phase = phase if phase is not None else alte_phase
-neues_medium = medium if medium is not None else altes_medium
-neue_topfgroesse = (
-    topfgroesse if topfgroesse is not None else alte_topfgroesse
-)
-neue_lampe = lampe if lampe is not None else alte_lampe
+    # Nicht angegebene Werte bleiben unverändert
+    neue_phase = phase if phase is not None else alte_phase
+    neues_medium = medium if medium is not None else altes_medium
+    neue_topfgroesse = (
+        topfgroesse if topfgroesse is not None else alte_topfgroesse
+    )
+    neue_lampe = lampe if lampe is not None else alte_lampe
 
-neuer_genetik_typ = (
-    genetik_typ if genetik_typ is not None else alter_genetik_typ
-)
-neue_anbaumethode = (
-    anbaumethode if anbaumethode is not None else alte_anbaumethode
-)
-neuer_lichtzyklus = (
-    lichtzyklus if lichtzyklus is not None else alter_lichtzyklus
-)
-neuer_status = (
-    status if status is not None else alter_status
-)
-# Änderungen speichern
-aktualisiere_pflanze(
-    interaction.channel.id,
-    neue_phase,
-    neues_medium,
-    neue_topfgroesse,
-    neue_lampe,
-    neuer_genetik_typ,
-    neue_anbaumethode,
-    neuer_lichtzyklus,
-    neuer_status
-)
+    neuer_genetik_typ = (
+        genetik_typ if genetik_typ is not None else alter_genetik_typ
+    )
+    neue_anbaumethode = (
+        anbaumethode if anbaumethode is not None else alte_anbaumethode
+    )
+    neuer_lichtzyklus = (
+        lichtzyklus if lichtzyklus is not None else alter_lichtzyklus
+    )
+    neuer_status = (
+        status if status is not None else alter_status
+    )
+    # Änderungen speichern
+    aktualisiere_pflanze(
+        interaction.channel.id,
+        neue_phase,
+        neues_medium,
+        neue_topfgroesse,
+        neue_lampe,
+        neuer_genetik_typ,
+        neue_anbaumethode,
+        neuer_lichtzyklus,
+        neuer_status
+    )
 
-embed = discord.Embed(
-    title=f"✅ Pflanzenprofil aktualisiert – {name}",
-    description="Die Änderungen wurden erfolgreich gespeichert."
-)
+    embed = discord.Embed(
+        title=f"✅ Pflanzenprofil aktualisiert – {name}",
+        description="Die Änderungen wurden erfolgreich gespeichert."
+    )
 
-embed.add_field(
-    name="🌿 Phase",
-    value=neue_phase or "–",
-    inline=True
-)
+    embed.add_field(
+        name="🌿 Phase",
+        value=neue_phase or "–",
+        inline=True
+    )
 
-embed.add_field(
-    name="🪴 Medium",
-    value=neues_medium or "–",
-    inline=True
-)
+    embed.add_field(
+        name="🪴 Medium",
+        value=neues_medium or "–",
+        inline=True
+    )
 
-embed.add_field(
-    name="🪣 Topfgröße",
-    value=neue_topfgroesse or "–",
-    inline=True
-)
+    embed.add_field(
+        name="🪣 Topfgröße",
+        value=neue_topfgroesse or "–",
+        inline=True
+    )
 
-embed.add_field(
-    name="💡 Lampe",
-    value=neue_lampe or "–",
-    inline=True
-)
+    embed.add_field(
+        name="💡 Lampe",
+        value=neue_lampe or "–",
+        inline=True
+    )
 
-embed.add_field(
-    name="🧬 Genetik-Typ",
-    value=neuer_genetik_typ or "-",
-    inline=True
-)
+    embed.add_field(
+        name="🧬 Genetik-Typ",
+        value=neuer_genetik_typ or "-",
+        inline=True
+    )
 
-embed.add_field(
-    name="🌱 Anbaumethode",
-    value=neue_anbaumethode or "-",
-    inline=True
-)
+    embed.add_field(
+        name="🌱 Anbaumethode",
+        value=neue_anbaumethode or "-",
+        inline=True
+    )
 
-embed.add_field(
-    name="☀️ Lichtzyklus",
-    value=neuer_lichtzyklus or "-",
-    inline=True
-)
+    embed.add_field(
+        name="☀️ Lichtzyklus",
+        value=neuer_lichtzyklus or "-",
+        inline=True
+    )
 
-embed.add_field(
-    name="📊 Status",
-    value=neuer_status or "-",
-    inline=True
-)
+    embed.add_field(
+        name="📊 Status",
+        value=neuer_status or "-",
+        inline=True
+    )
 
-embed.set_footer(
-    text="Black Forest Genetics • GrowBot"
-)
+    embed.set_footer(
+        text="Black Forest Genetics • GrowBot"
+    )
 
-await interaction.response.send_message(embed=embed)
+    await interaction.response.send_message(embed=embed)
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
