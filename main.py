@@ -1257,21 +1257,21 @@ async def profil_bearbeiten(
             )
             return
 
-        (
-        name,
-        sorte,
-        breeder,
-        keimdatum,
-        alte_phase,
-        altes_medium,
-        alte_topfgroesse,
-        alte_lampe,
-        grower_id,
-        alter_genetik_typ,
-        alte_anbaumethode,
-        alter_lichtzyklus,
-        alter_status
-    ) = pflanze
+            (
+            name,
+            sorte,
+            breeder,
+            keimdatum,
+            alte_phase,
+            altes_medium,
+            alte_topfgroesse,
+            alte_lampe,
+            grower_id,
+            alter_genetik_typ,
+            alte_anbaumethode,
+            alter_lichtzyklus,
+            alter_status
+        ) = pflanze
 
     # Nicht angegebene Werte bleiben unverändert
     neue_phase = phase if phase is not None else alte_phase
