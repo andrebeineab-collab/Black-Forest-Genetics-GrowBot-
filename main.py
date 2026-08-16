@@ -1230,6 +1230,14 @@ async def pflanze_erstellen(
     status="Neuer Status"
 )
 @app_commands.choices(
+    phase=[
+        app_commands.Choice(name="🌱 Keimung", value="Keimung"),
+        app_commands.Choice(name="🌿 Sämling", value="Sämling"),
+        app_commands.Choice(name="🌳 Vegetation", value="Vegetation"),
+        app_commands.Choice(name="🌸 Blüte", value="Blüte"),
+        app_commands.Choice(name="✂️ Trocknung", value="Trocknung"),
+        app_commands.Choice(name="✅ Abgeschlossen", value="Abgeschlossen"),
+    ],
     status=[
         app_commands.Choice(name="Aktiv", value="Aktiv"),
         app_commands.Choice(name="Pausiert", value="Pausiert"),
