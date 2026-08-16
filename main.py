@@ -540,9 +540,14 @@ def speichere_pflanze(
     medium,
     topfgroesse,
     lampe,
-    grower_id
+    grower_id,
+    genetik_typ,
+    anbaumethode,
+    lichtzyklus,
+    status
 ):
-    connection = get_db_connection()
+    connection =
+    get_db_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -558,9 +563,13 @@ def speichere_pflanze(
             topfgroesse,
             lampe,
             grower_id,
+            genetik_typ,
+            anbaumethode,
+            lichtzyklus,
+            status,
             erstellt_am
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         discord_channel_id,
         discord_thread_id,
@@ -573,6 +582,10 @@ def speichere_pflanze(
         topfgroesse,
         lampe,
         grower_id,
+        genetik_typ,
+        anbaumethode,
+        lichtzyklus,
+        status,
         datetime.now().isoformat()
     ))
 
@@ -584,15 +597,19 @@ def lade_pflanze(thread_id):
 
     cursor.execute("""
         SELECT
-            name,
-            sorte,
-            breeder,
-            keimdatum,
-            phase,
-            medium,
-            topfgroesse,
-            lampe,
-            grower_id
+    name,
+    sorte,
+    breeder,
+    keimdatum,
+    phase,
+    medium,
+    topfgroesse,
+    lampe,
+    grower_id,
+    genetik_typ,
+    anbaumethode,
+    lichtzyklus,
+    status
         FROM plants
         WHERE discord_thread_id = %s
         ORDER BY id DESC
@@ -609,7 +626,11 @@ def aktualisiere_pflanze(
     phase,
     medium,
     topfgroesse,
-    lampe
+    lampe,
+    genetik_typ,
+    anbaumethode,
+    lichtzyklus,
+    status
 ):
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -620,15 +641,24 @@ def aktualisiere_pflanze(
             phase = %s,
             medium = %s,
             topfgroesse = %s,
-            lampe = %s
+            lampe = %s,
+            genetik_typ = %s,
+            anbaumethode = %s,
+            lichtzyklus = %s,
+            status = %s
         WHERE discord_thread_id = %s
-    """, (
+        """, (
         phase,
         medium,
         topfgroesse,
         lampe,
+        genetik_typ,
+        anbaumethode,
+        lichtzyklus,
+        status,
         thread_id
     ))
+    
 
     connection.commit()
     connection.close()
@@ -1069,7 +1099,11 @@ async def phasendauer(interaction: discord.Interaction):
     phase="Aktuelle Phase",
     medium="Medium, z.B. Erde oder Coco",
     topfgroesse="Topfgröße, z.B. 11 L",
-    lampe="Verwendete Lampe"
+    lampe="Verwendete Lampe",
+    genetik_typ="Genetik-Typ, z.B. feminisiert oder regulär",
+    anbaumethode="Anbaumethode, z.B. Indoor oder Outdoor",
+    lichtzyklus="Lichtzyklus, z.B. 18/6 oder 12/12",
+    status="Status der Pflanze, z.B. Aktiv"
 )
 async def pflanze_erstellen(
     interaction: discord.Interaction,
@@ -1080,7 +1114,11 @@ async def pflanze_erstellen(
     phase: str,
     medium: str,
     topfgroesse: str,
-    lampe: str
+    lampe: str,
+    genetik_typ: str,
+    anbaumethode: str,
+    lichtzyklus: str,
+    status: str
 ):
     # Nur innerhalb eines Growlog-Threads
     if not isinstance(interaction.channel, discord.Thread):
@@ -1102,7 +1140,6 @@ async def pflanze_erstellen(
 
     # Profil in der Datenbank speichern
     speichere_pflanze(
-
         interaction.channel.parent_id,
         interaction.channel.id,
         name,
@@ -1113,7 +1150,11 @@ async def pflanze_erstellen(
         medium,
         topfgroesse,
         lampe,
-        interaction.user.id
+        interaction.user.id,
+        genetik_typ,
+        anbaumethode,
+        lichtzyklus,
+        status
     )
 
     embed = discord.Embed(
@@ -1180,17 +1221,25 @@ async def pflanze_erstellen(
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
 @app_commands.describe(
-    phase="Neue Phase, z.B. Wachstum oder Blüte",
+    phase="Neue Phase",
     medium="Neues Medium",
     topfgroesse="Neue Topfgröße",
-    lampe="Neue Lampe"
+    lampe="Neue Lampe",
+    genetik_typ="Neuer Genetik-Typ",
+    anbaumethode="Neue Anbaumethode",
+    lichtzyklus="Neuer Lichtzyklus",
+    status="Neuer Status"
 )
 async def profil_bearbeiten(
     interaction: discord.Interaction,
     phase: str = None,
     medium: str = None,
     topfgroesse: str = None,
-    lampe: str = None
+    lampe: str = None,
+    genetik_typ: str = None,
+    anbaumethode: str = None,
+    lichtzyklus: str = None,
+    status: str = None
 ):
     # Nur innerhalb eines Growlog-Threads
     if not isinstance(interaction.channel, discord.Thread):
@@ -1210,33 +1259,53 @@ async def profil_bearbeiten(
         return
 
     (
-        name,
-        sorte,
-        breeder,
-        keimdatum,
-        alte_phase,
-        altes_medium,
-        alte_topfgroesse,
-        alte_lampe,
-        grower_id
-    ) = pflanze
+    name,
+    sorte,
+    breeder,
+    keimdatum,
+    alte_phase,
+    altes_medium,
+    alte_topfgroesse,
+    alte_lampe,
+    grower_id,
+    alter_genetik_typ,
+    alte_anbaumethode,
+    alter_lichtzyklus,
+    alter_status
+) = pflanze
 
  # Nicht angegebene Werte bleiben unverändert
-    neue_phase = phase if phase is not None else alte_phase
-    neues_medium = medium if medium is not None else altes_medium
-    neue_topfgroesse = (
-        topfgroesse if topfgroesse is not None else alte_topfgroesse
-    )
-    neue_lampe = lampe if lampe is not None else alte_lampe
+neue_phase = phase if phase is not None else alte_phase
+neues_medium = medium if medium is not None else altes_medium
+neue_topfgroesse = (
+    topfgroesse if topfgroesse is not None else alte_topfgroesse
+)
+neue_lampe = lampe if lampe is not None else alte_lampe
 
-    # Änderungen speichern
-    aktualisiere_pflanze(
-        interaction.channel.id,
-        neue_phase,
-        neues_medium,
-        neue_topfgroesse,
-        neue_lampe
-    )
+neuer_genetik_typ = (
+    genetik_typ if genetik_typ is not None else alter_genetik_typ
+)
+neue_anbaumethode = (
+    anbaumethode if anbaumethode is not None else alte_anbaumethode
+)
+neuer_lichtzyklus = (
+    lichtzyklus if lichtzyklus is not None else alter_lichtzyklus
+)
+neuer_status = (
+    status if status is not None else alter_status
+)
+# Änderungen speichern
+aktualisiere_pflanze(
+    interaction.channel.id,
+    neue_phase,
+    neues_medium,
+    neue_topfgroesse,
+    neue_lampe,
+    neuer_genetik_typ,
+    neue_anbaumethode,
+    neuer_lichtzyklus,
+    neuer_status
+)
 
     embed = discord.Embed(
         title=f"✅ Pflanzenprofil aktualisiert – {name}",
@@ -1264,6 +1333,30 @@ async def profil_bearbeiten(
     embed.add_field(
         name="💡 Lampe",
         value=neue_lampe or "–",
+        inline=True
+    )
+
+    embed.add_field(
+        name="🧬 Genetik-Typ",
+        value=neuer_genetik_typ or "-",
+        inline=True
+    )
+
+    embed.add_field(
+        name="🌱 Anbaumethode",
+        value=neue_anbaumethode or "-",
+        inline=True
+    )
+
+    embed.add_field(
+        name="☀️ Lichtzyklus",
+        value=neuer_lichtzyklus or "-",
+        inline=True
+    )
+
+    embed.add_field(
+        name="📊 Status",
+        value=neuer_status or "-",
         inline=True
     )
 
