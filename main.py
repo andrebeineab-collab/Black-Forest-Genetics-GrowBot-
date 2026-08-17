@@ -1238,6 +1238,11 @@ async def pflanze_erstellen(
         app_commands.Choice(name="✂️ Trocknung", value="Trocknung"),
         app_commands.Choice(name="✅ Abgeschlossen", value="Abgeschlossen"),
     ],
+    anbaumethode=[
+        app_commands.Choice(name="🏠 Indoor", value="Indoor"),
+        app_commands.Choice(name="🌳 Outdoor", value="Outdoor"),
+        app_commands.Choice(name="🏡 Gewächshaus", value="Gewächshaus"),
+    ],
     status=[
         app_commands.Choice(name="Aktiv", value="Aktiv"),
         app_commands.Choice(name="Pausiert", value="Pausiert"),
