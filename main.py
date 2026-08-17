@@ -362,8 +362,24 @@ async def eintrag(
             ephemeral=True
         )
         return
+    if keimdatum in ("_", "—", "", None):
+            connection = get_db_connection()
+            cursor = connection.cursor()
+            cursor.execute("""
+                SELECT keimdatum
+                FROM plants
+                WHERE discord_thread_id = %s
+                ORDER BY id DESC
+                LIMIT 1
+            """, (interaction.channel.id,))
+            pflanze = cursor.fetchone()
+            connection.close()
 
-    lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
+            if pflanze:
+                keimdatum = pflanze[0]
+
+        lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
+
 
     alter_text = (
         f"🌱 **Lebenstag:** {lebenstage}\n"
