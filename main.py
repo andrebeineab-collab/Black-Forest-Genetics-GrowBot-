@@ -370,6 +370,7 @@ async def eintrag(
             ephemeral=True
         )
         return
+    await interaction.response.defer()
     if keimdatum in ("_", "—", "", None):
             connection = get_db_connection()
             cursor = connection.cursor()
@@ -397,7 +398,7 @@ async def eintrag(
     )
     zeitpunkt = int(interaction.created_at.timestamp())
 
-    await interaction.response.send_message(
+    await interaction.followup.send(
         f"## 📋 Neuer Growlog-Eintrag\n"
         f"📅 **Zeitpunkt:** <t:{zeitpunkt}:F>\n"
         f"👤 **Grower:** {interaction.user.mention}\n\n"
