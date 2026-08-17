@@ -337,19 +337,27 @@ async def pflanze_info(interaction: discord.Interaction):
 @app_commands.describe(
     temperatur="Temperatur, zum Beispiel 24 °C",
     luftfeuchtigkeit="Luftfeuchtigkeit, zum Beispiel 65 %",
-    giessen="Gießmenge oder Angabe zum Gießen",
+    giessen_menge="Gießmenge – nur die Zahl eingeben",
+    giessen_einheit="Einheit der Gießmenge auswählen",
     duengung="Verwendeter Dünger und Dosierung",
     ph="Gemessener pH-Wert",
     ppfd_dli="Gemessener PPFD- oder DLI-Wert",
     wuchshoehe="Aktuelle Wuchshöhe",
     notizen="Weitere Beobachtungen"
 )
+@app_commands.choices(
+    giessen_einheit=[
+        app_commands.Choice(name="ml", value="ml"),
+        app_commands.Choice(name="L", value="L")
+    ]
+)
 async def eintrag(
     interaction: discord.Interaction,
     keimdatum: str = "_",
     temperatur: str = "—",
     luftfeuchtigkeit: str = "—",
-    giessen: str = "—",
+    giessen_menge: str = "—",
+    giessen_einheit: app_commands.Choice[str] = None,
     duengung: str = "—",
     ph: str = "—",
     ppfd_dli: str = "—",
@@ -396,7 +404,7 @@ async def eintrag(
         f"{alter_text}\n"
         f"🌡️ **Temperatur:** {temperatur}\n"
         f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
-        f"🚿 **Gießen:**{giessen}\n"
+        f"🚿 **Gießen:** {giessen_menge} {giessen_einheit.value if giessen_einheit else ''}\n"
         f"🧪 **Düngung:** {duengung}\n"
         f"⚗️ **pH:** {ph}\n"
         f"💡 **PPFD / DLI:** {ppfd_dli}\n"
@@ -410,7 +418,7 @@ async def eintrag(
         datetime.now(BERLIN_TZ).isoformat(),
         temperatur,
         luftfeuchtigkeit,
-        giessen,
+        f"{giessen_menge} {giessen_einheit.value if giessen_einheit else ''}",
         duengung,
         ph,
         ppfd_dli,
