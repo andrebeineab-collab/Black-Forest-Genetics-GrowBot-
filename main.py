@@ -1243,6 +1243,11 @@ async def pflanze_erstellen(
         app_commands.Choice(name="🌳 Outdoor", value="Outdoor"),
         app_commands.Choice(name="🏡 Gewächshaus", value="Gewächshaus"),
     ],
+    genetik_typ=[
+        app_commands.Choice(name="🧬 Regulär", value="Regulär"),
+        app_commands.Choice(name="♀️ Feminisiert", value="Feminisiert"),
+        app_commands.Choice(name="⚡ Autoflower", value="Autoflower"),
+    ],
     status=[
         app_commands.Choice(name="Aktiv", value="Aktiv"),
         app_commands.Choice(name="Pausiert", value="Pausiert"),
