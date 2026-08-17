@@ -415,7 +415,7 @@ async def eintrag(
         f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
         f"🚿 **Gießen:** {giessen_menge} {giessen_einheit.value if giessen_einheit else ''}\n"
         f"🧪 **Düngung:** {duenger_name} – {duengung_menge} {duengung_einheit.value if duengung_einheit else ''}\n"
-        f"⚗️ **pH:** {ph if ph is not None else '—'}
+        f"⚗️ **pH:** {ph if ph is not None else '—'}\n"
         f"💡 **PPFD / DLI:** {ppfd_dli}\n"
         f"📏 **Wuchshöhe:** {wuchshoehe}\n"
         f"📝 **Notizen:** {notizen}\n\n"
