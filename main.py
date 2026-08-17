@@ -1238,6 +1238,13 @@ async def pflanze_erstellen(
         app_commands.Choice(name="✂️ Trocknung", value="Trocknung"),
         app_commands.Choice(name="✅ Abgeschlossen", value="Abgeschlossen"),
     ],
+    medium=[
+        app_commands.Choice(name="🌱 Erde", value="Erde"),
+        app_commands.Choice(name="🥥 Coco", value="Coco"),
+        app_commands.Choice(name="💧 Hydro", value="Hydro"),
+        app_commands.Choice(name="🧱 Steinwolle", value="Steinwolle"),
+        app_commands.Choice(name="🌿 Living Soil", value="Living Soil"),
+    ],
     anbaumethode=[
         app_commands.Choice(name="🏠 Indoor", value="Indoor"),
         app_commands.Choice(name="🌳 Outdoor", value="Outdoor"),
