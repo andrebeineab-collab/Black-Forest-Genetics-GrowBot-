@@ -1248,6 +1248,12 @@ async def pflanze_erstellen(
         app_commands.Choice(name="♀️ Feminisiert", value="Feminisiert"),
         app_commands.Choice(name="⚡ Autoflower", value="Autoflower"),
     ],
+    lichtzyklus=[
+        app_commands.Choice(name="☀️ 18/6", value="18/6"),
+        app_commands.Choice(name="🌤️ 20/4", value="20/4"),
+        app_commands.Choice(name="💡 24/0", value="24/0"),
+        app_commands.Choice(name="🌙 12/12", value="12/12"),
+    ],
     status=[
         app_commands.Choice(name="Aktiv", value="Aktiv"),
         app_commands.Choice(name="Pausiert", value="Pausiert"),
