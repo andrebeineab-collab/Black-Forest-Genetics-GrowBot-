@@ -339,7 +339,9 @@ async def pflanze_info(interaction: discord.Interaction):
     luftfeuchtigkeit="Luftfeuchtigkeit, zum Beispiel 65 %",
     giessen_menge="Gießmenge – nur die Zahl eingeben",
     giessen_einheit="Einheit der Gießmenge auswählen",
-    duengung="Verwendeter Dünger und Dosierung",
+    duenger_name="Name des verwendeten Düngers",
+    duengung_menge="Dosierung - nur die Zahl eingeben",
+    duengung_einheit="Einheit der Dosierung auswählen",
     ph="Gemessener pH-Wert",
     ppfd_dli="Gemessener PPFD- oder DLI-Wert",
     wuchshoehe="Aktuelle Wuchshöhe",
@@ -350,6 +352,10 @@ async def pflanze_info(interaction: discord.Interaction):
         app_commands.Choice(name="ml", value="ml"),
         app_commands.Choice(name="L", value="L")
     ]
+    duengung_einheit=[
+        app_commands.Choice(name="ml/L", value="ml/L"),
+        app_commands.Choice(name="g/L", value="g/L")
+    ]
 )
 async def eintrag(
     interaction: discord.Interaction,
@@ -358,7 +364,9 @@ async def eintrag(
     luftfeuchtigkeit: str = "—",
     giessen_menge: str = "—",
     giessen_einheit: app_commands.Choice[str] = None,
-    duengung: str = "—",
+    duenger_name: str = "_",
+    duengung_menge: str = "_",
+    duengung_einheit: app_commands.Choice[str] = None,
     ph: str = "—",
     ppfd_dli: str = "—",
     wuchshoehe: str = "—",
@@ -406,7 +414,7 @@ async def eintrag(
         f"🌡️ **Temperatur:** {temperatur}\n"
         f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
         f"🚿 **Gießen:** {giessen_menge} {giessen_einheit.value if giessen_einheit else ''}\n"
-        f"🧪 **Düngung:** {duengung}\n"
+        f"🧪 **Düngung:** {duenger_name} – {duengung_menge} {duengung_einheit.value if duengung_einheit else ''}\n"
         f"⚗️ **pH:** {ph}\n"
         f"💡 **PPFD / DLI:** {ppfd_dli}\n"
         f"📏 **Wuchshöhe:** {wuchshoehe}\n"
@@ -420,7 +428,7 @@ async def eintrag(
         temperatur,
         luftfeuchtigkeit,
         f"{giessen_menge} {giessen_einheit.value if giessen_einheit else ''}",
-        duengung,
+        f"{duenger_name} – {duengung_menge} {duengung_einheit.value if duengung_einheit else ''}",
         ph,
         ppfd_dli,
         wuchshoehe,
