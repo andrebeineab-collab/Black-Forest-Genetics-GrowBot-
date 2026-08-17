@@ -351,7 +351,7 @@ async def pflanze_info(interaction: discord.Interaction):
     giessen_einheit=[
         app_commands.Choice(name="ml", value="ml"),
         app_commands.Choice(name="L", value="L")
-    ]
+    ],
     duengung_einheit=[
         app_commands.Choice(name="ml/L", value="ml/L"),
         app_commands.Choice(name="g/L", value="g/L")
