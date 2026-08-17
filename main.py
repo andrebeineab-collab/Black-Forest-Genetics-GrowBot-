@@ -367,7 +367,7 @@ async def eintrag(
     duenger_name: str = "_",
     duengung_menge: str = "_",
     duengung_einheit: app_commands.Choice[str] = None,
-    ph: str = "—",
+    ph: float | None = None,
     ppfd_dli: str = "—",
     wuchshoehe: str = "—",
     notizen: str = "—"
@@ -415,7 +415,7 @@ async def eintrag(
         f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
         f"🚿 **Gießen:** {giessen_menge} {giessen_einheit.value if giessen_einheit else ''}\n"
         f"🧪 **Düngung:** {duenger_name} – {duengung_menge} {duengung_einheit.value if duengung_einheit else ''}\n"
-        f"⚗️ **pH:** {ph}\n"
+        f"⚗️ **pH:** {ph if ph is not None else '—'}
         f"💡 **PPFD / DLI:** {ppfd_dli}\n"
         f"📏 **Wuchshöhe:** {wuchshoehe}\n"
         f"📝 **Notizen:** {notizen}\n\n"
