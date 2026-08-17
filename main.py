@@ -378,7 +378,7 @@ async def eintrag(
             if pflanze:
                 keimdatum = pflanze[0]
 
-        lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
+    lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
 
 
     alter_text = (
