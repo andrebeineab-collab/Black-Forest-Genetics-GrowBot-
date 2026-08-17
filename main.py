@@ -346,7 +346,7 @@ async def pflanze_info(interaction: discord.Interaction):
 )
 async def eintrag(
     interaction: discord.Interaction,
-    keimdatum: str, "_",
+    keimdatum: str = "_",
     temperatur: str = "—",
     luftfeuchtigkeit: str = "—",
     giessen: str = "—",
