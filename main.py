@@ -344,7 +344,8 @@ async def pflanze_info(interaction: discord.Interaction):
     duengung_einheit="Einheit der Dosierung auswählen",
     ph="Gemessener pH-Wert",
     ppfd_dli="Gemessener PPFD- oder DLI-Wert",
-    wuchshoehe="Aktuelle Wuchshöhe",
+    wuchshoehe="Aktuelle Wuchshöhe - nur die Zahl eingeben",
+    wuchshoehe_einheit="Einheit der Wuchshöhe auswählen",
     notizen="Weitere Beobachtungen"
 )
 @app_commands.choices(
@@ -355,6 +356,12 @@ async def pflanze_info(interaction: discord.Interaction):
     duengung_einheit=[
         app_commands.Choice(name="ml/L", value="ml/L"),
         app_commands.Choice(name="g/L", value="g/L")
+    ],
+    wuchshoehe_einheit=[
+    app_commands.Choice(name="cm", value="cm"),
+    app_commands.Choice(name="m", value="m"),
+    app_commands.Choice(name="in", value="in"),
+    app_commands.Choice(name="ft", value="ft")
     ]
 )
 async def eintrag(
@@ -370,6 +377,7 @@ async def eintrag(
     ph: float | None = None,
     ppfd_dli: str = "—",
     wuchshoehe: str = "—",
+    wuchshoehe_einheit: app_commands.Choice[str] | None = None,
     notizen: str = "—"
 ):
     if not isinstance(interaction.channel, discord.Thread):
@@ -417,7 +425,7 @@ async def eintrag(
         f"🧪 **Düngung:** {duenger_name} – {duengung_menge} {duengung_einheit.value if duengung_einheit else ''}\n"
         f"⚗️ **pH:** {ph if ph is not None else '—'}\n"
         f"💡 **PPFD / DLI:** {ppfd_dli}\n"
-        f"📏 **Wuchshöhe:** {wuchshoehe}\n"
+        f"📏 **Wuchshöhe:** {wuchshoehe} {wuchshoehe_einheit.value if wuchshoehe_einheit else ''}\n"
         f"📝 **Notizen:** {notizen}\n\n"
         f"📷 **Fotos:** Direkt unter diesem Eintrag hochladen"
     )
