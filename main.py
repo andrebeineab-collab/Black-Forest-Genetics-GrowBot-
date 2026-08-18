@@ -1459,43 +1459,6 @@ async def profil_bearbeiten(
     )
 
     await interaction.response.send_message(embed=embed)
-
-@app_commands.command(
-    name="eintrag",
-    description="Neuen Growlog-Eintrag erstellen"
-)
-@app_commands.describe(
-    temperatur="Temperatur in °C",
-    luftfeuchtigkeit="Luftfeuchtigkeit in %"
-)
-async def eintrag(
-    interaction: discord.Interaction,
-    temperatur: float,
-    luftfeuchtigkeit: float
-):
-    embed = discord.Embed(
-        title="🌱 Neuer Growlog-Eintrag",
-        description="Neue Messwerte wurden eingetragen."
-    )
-
-    embed.add_field(
-        name="🌡️ Temperatur",
-        value=f"{temperatur} °C",
-        inline=True
-    )
-
-    embed.add_field(
-        name="💧 Luftfeuchtigkeit",
-
-        value=f"{luftfeuchtigkeit} %",
-        inline=True
-    )
-
-    embed.set_footer(
-        text="Black Forest Genetics • GrowBot"
-    )
-
-    await interaction.response.send_message(embed=embed)
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 if not TOKEN:
