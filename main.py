@@ -785,7 +785,11 @@ async def profil(interaction: discord.Interaction):
         medium,
         topfgroesse,
         lampe,
-        grower_id
+        grower_id,
+        genetik_typ,
+        anbaumethode,
+        lichtzyklus,
+        status
     ) = pflanze
 
     # Leere Werte sauber darstellen
@@ -852,6 +856,30 @@ async def profil(interaction: discord.Interaction):
     embed.add_field(
         name="💡 Lampe",
         value=wert(lampe),
+        inline=True
+    )
+
+    embed.add_field(
+        name="🧬 Genetik-Typ",
+        value=wert(genetik_typ),
+        inline=True
+    )
+
+    embed.add_field(
+        name="🌱 Anbaumethode",
+        value=wert(anbaumethode),
+        inline=True
+    )
+
+    embed.add_field(
+        name="☀️ Lichtzyklus",
+        value=wert(lichtzyklus),
+        inline=True
+    )
+
+    embed.add_field(
+        name="📊 Status",
+        value=wert(status),
         inline=True
     )
 
@@ -1245,6 +1273,30 @@ async def pflanze_erstellen(
     )
 
     embed.add_field(
+        name="🧬 Genetik-Typ",
+        value=genetik_typ,
+        inline=True
+    )
+
+    embed.add_field(
+        name="🌱 Anbaumethode",
+        value=anbaumethode,
+        inline=True
+    )
+
+    embed.add_field(
+        name="☀️ Lichtzyklus",
+        value=lichtzyklus,
+        inline=True
+    )
+
+    embed.add_field(
+        name="📊 Status",
+        value=status,
+        inline=True
+    )
+
+    embed.add_field(
         name="👤 Grower",
         value=interaction.user.mention,
         inline=True
@@ -1272,12 +1324,13 @@ async def pflanze_erstellen(
 )
 @app_commands.choices(
     phase=[
-        app_commands.Choice(name="🌱 Keimung", value="Keimung"),
-        app_commands.Choice(name="🌿 Sämling", value="Sämling"),
-        app_commands.Choice(name="🌳 Vegetation", value="Vegetation"),
-        app_commands.Choice(name="🌸 Blüte", value="Blüte"),
-        app_commands.Choice(name="✂️ Trocknung", value="Trocknung"),
-        app_commands.Choice(name="✅ Abgeschlossen", value="Abgeschlossen"),
+    app_commands.Choice(name="🌱 Keimung", value="Keimung"),
+    app_commands.Choice(name="🌿 Sämling", value="Sämling"),
+    app_commands.Choice(name="🍃 Wachstum", value="Wachstum"),
+    app_commands.Choice(name="🌸 Blüte", value="Blüte"),
+    app_commands.Choice(name="🌾 Trocknung", value="Trocknung"),
+    app_commands.Choice(name="🫙 Curing", value="Curing"),
+    app_commands.Choice(name="🧬 Klon", value="Klon"),
     ],
     medium=[
         app_commands.Choice(name="🌱 Erde", value="Erde"),
@@ -1297,6 +1350,14 @@ async def pflanze_erstellen(
         app_commands.Choice(name="🪣 20 Liter", value="20 Liter"),
         app_commands.Choice(name="🪣 25 Liter", value="25 Liter"),
         app_commands.Choice(name="🪣 30 Liter", value="30 Liter"),
+        app_commands.Choice(name="🪣 1 US Gallone", value="1 US Gallone"),
+        app_commands.Choice(name="🪣 2 US Gallonen", value="2 US Gallonen"),
+        app_commands.Choice(name="🪣 3 US Gallonen", value="3 US Gallonen"),
+        app_commands.Choice(name="🪣 5 US Gallonen", value="5 US Gallonen"),
+        app_commands.Choice(name="🪣 7 US Gallonen", value="7 US Gallonen"),
+        app_commands.Choice(name="🪣 10 US Gallonen", value="10 US Gallonen"),
+        app_commands.Choice(name="🪣 15 US Gallonen", value="15 US Gallonen"),
+        app_commands.Choice(name="🪣 20 US Gallonen", value="20 US Gallonen"),
     ],
     lampe=[
         app_commands.Choice(name="💡 LED 50 W", value="LED 50 W"),
@@ -1396,6 +1457,33 @@ async def profil_bearbeiten(
     neuer_status = (
         status if status is not None else alter_status
     )
+    #Phasenänderung zusätzlich in der Phasenhistorie speichern
+    if phase is not None and phase != alte_phase:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO phase_history (
+                discord_thread_id,
+                grower_id,
+                alte_phase,
+                neue_phase,
+                geaendert_am
+            )
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (
+                interaction.channel.id,
+                interaction.user.id,
+                alte_phase,
+                phase,
+                datetime.now(BERLIN_TZ).isoformat()
+            )
+        )
+
+        connection.commit()
+        connection.close()
     # Änderungen speichern
     aktualisiere_pflanze(
         interaction.channel.id,
