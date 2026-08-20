@@ -569,7 +569,7 @@ async def historie(interaction: discord.Interaction):
 # -------------------------
 # Bot starten
 # -------------------------
-init_db()
+#init_db()
 def speichere_pflanze(
     discord_channel_id,
     discord_thread_id,
