@@ -561,7 +561,10 @@ async def historie(interaction: discord.Interaction):
                 f"📝 **Notizen:** {notizen}\n"
                 f"\n──────────────\n\n"
             )
-    await interaction.followup.send(text, ephemeral=True)
+    for i in range(0, len(text), 1900):
+        await interaction.followup.send(
+            text[i:i + 1900], ephemeral=True
+        )
 
 
 
