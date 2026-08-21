@@ -566,13 +566,104 @@ async def historie(interaction: discord.Interaction):
             text[i:i + 1900], ephemeral=True
         )
 
+@bot.tree.command(
+    name="phasen-historie",
+    description="Zeigt die gespeicherten Phasenänderungen dieser Pflanze."
+)
+async def phasen_historie(interaction: discord.Interaction):
 
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Benutze `/phasen-historie` innerhalb eines Growlog-Threads.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+  alte_phase,
+            neue_phase,
+            geaendert_am
+        FROM phase_history
+        WHERE discord_thread_id = %s
+        ORDER BY id ASC
+        """,
+        (interaction.channel.id,)
+    )
+
+    eintraege = cursor.fetchall()
+    connection.close()
+
+    if not eintraege:
+        await interaction.followup.send(
+            "🌱 Für diese Pflanze wurden noch keine Phasenänderungen gespeichert.",
+            ephemeral=True
+        )
+        return
+
+    text = "## 🌱 Phasen-Historie\n\n"
+
+    for alte_phase, neue_phase, geaendert_am in eintraege:
+
+        try:
+            zeitpunkt = datetime.fromisoformat(str(geaendert_am))
+
+            if zeitpunkt.tzinfo
+            is None:
+                zeitpunkt = zeitpunkt.replace(
+                    tzinfo=timezone.utc
+                ).astimezone(BERLIN_TZ)
+            else:
+                zeitpunkt = zeitpunkt.astimezone(BERLIN_TZ)
+
+            zeit_text = zeitpunkt.strftime(
+                "%d.%m.%Y – %H:%M Uhr"
+            )
+
+        except (ValueError, TypeError):
+            zeit_text = str(geaendert_am)
+
+        text += (
+            f"📅 **{zeit_text}**\n"
+            f"🌿 **{alte_phase or '-'} → {neue_phase or '-'}**\n"
+            f"──────────────\n\n"
+        )
+
+    for i in range(0, len(text), 1900):
+        await interaction.followup.send(
+            text[i:i + 1900],
+            ephemeral=True
+    )
 
 
 # -------------------------
 # Bot starten
 # -------------------------
-#init_db()
+def init_phase_history():
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS phase_history (
+            id SERIAL PRIMARY KEY,
+            discord_thread_id BIGINT NOT NULL,
+            grower_id BIGINT,
+            alte_phase TEXT,
+            neue_phase TEXT,
+            geaendert_am TEXT
+        )
+    """)
+
+    connection.commit()
+    connection.close()
+
+
 def speichere_pflanze(
     discord_channel_id,
     discord_thread_id,
@@ -1569,5 +1660,7 @@ threading.Thread(
     target=run_webserver,
     daemon=True
 ).start()
+
+init_phase_history()
 
 bot.run(TOKEN)
