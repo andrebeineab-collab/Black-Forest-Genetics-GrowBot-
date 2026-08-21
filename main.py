@@ -614,8 +614,7 @@ async def phasen_historie(interaction: discord.Interaction):
         try:
             zeitpunkt = datetime.fromisoformat(str(geaendert_am))
 
-            if zeitpunkt.tzinfo
-            is None:
+            if zeitpunkt.tzinfo is None:
                 zeitpunkt = zeitpunkt.replace(
                     tzinfo=timezone.utc
                 ).astimezone(BERLIN_TZ)
