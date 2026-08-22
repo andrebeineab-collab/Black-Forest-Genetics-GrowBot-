@@ -503,14 +503,14 @@ async def historie(interaction: discord.Interaction):
 
 phasen_eintraege = cursor.fetchall()
     
-    connection.close()
+connection.close()
 
-    if not eintraege:
-        await interaction.followup.send(
-            "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
-            ephemeral=True
-        )
-        return
+if not eintraege:
+    await interaction.followup.send(
+        "📭 Für diesen Growlog wurden noch keine gespeicherten Einträge gefunden.",
+        ephemeral=True
+    )
+    return
 
     text = "## 📚 Growlog-Historie\n\n"
     for eintrag in eintraege:
