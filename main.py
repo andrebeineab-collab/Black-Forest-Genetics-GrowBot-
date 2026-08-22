@@ -675,7 +675,25 @@ def init_phase_history():
 
     connection.commit()
     connection.close()
+    
+def init_photos():
+    connection = get_db_connection()
+    cursor = connection.cursor()
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS photos (
+            id SERIAL PRIMARY KEY,
+            discord_thread_id BIGINT NOT NULL,
+            grower_id BIGINT,
+            entry_id BIGINT,
+            image_url TEXT NOT NULL,
+            message_id BIGINT,
+            erstellt_am TEXT
+        )
+    """)
+
+    connection.commit()
+    connection.close()
 
 def speichere_pflanze(
     discord_channel_id,
@@ -1675,5 +1693,7 @@ threading.Thread(
 ).start()
 
 #init_phase_history()
+
+init_photos()
 
 bot.run(TOKEN)
