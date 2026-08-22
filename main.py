@@ -488,6 +488,20 @@ async def historie(interaction: discord.Interaction):
 
     pflanze = cursor.fetchone()
     keimdatum = pflanze[0] if pflanze else None
+    cursor.execute(
+    """
+    SELECT
+        alte_phase,
+        neue_phase,
+        geaendert_am
+    FROM phase_history
+    WHERE discord_thread_id = %s
+    ORDER BY id ASC
+    """,
+    (interaction.channel.id,)
+)
+
+phasen_eintraege = cursor.fetchall()
     
     connection.close()
 
