@@ -654,6 +654,73 @@ async def phasen_historie(interaction: discord.Interaction):
             ephemeral=True
     )
 
+@bot.tree.command(
+    name="foto",
+    description="Speichert ein Foto im aktuellen Growlog."
+)
+async def foto(
+    interaction: discord.Interaction,
+    bild: discord.Attachment
+):
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur in einem Growlog-Thread.",
+            ephemeral=True
+        )
+        return
+
+    if not bild.content_type or not bild.content_type.startswith("image/"):
+        await interaction.response.send_message(
+            "❌ Bitte lade eine Bilddatei hoch.",
+            ephemeral=True
+        )
+        return
+    await interaction.response.defer(ephemeral=True)
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO photos (
+            discord_thread_id,
+            grower_id,
+            image_url,
+            message_id,
+            erstellt_am
+        )
+        VALUES (%s, %s, %s, %s, %s)
+        """,
+        (
+            interaction.channel.id,
+            interaction.user.id,
+            bild.url,
+            None,
+            datetime.now(BERLIN_TZ).isoformat()
+        )
+    )
+
+    connection.commit()
+    connection.close()
+    embed = discord.Embed(
+        title="📸 Growlog-Foto",
+        description=f"👤 **Grower:** {interaction.user.mention}",
+        color=discord.Color.green()
+    )
+
+    embed.set_image(url=bild.url)
+
+    embed.set_footer(
+        text="Black Forest Genetics • GrowBot"
+    )
+
+    await interaction.channel.send(embed=embed)
+
+    await interaction.followup.send(
+        "✅ Foto wurde im Growlog gespeichert.",
+        ephemeral=True
+    )
+
 
 # -------------------------
 # Bot starten
