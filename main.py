@@ -1674,6 +1674,6 @@ threading.Thread(
     daemon=True
 ).start()
 
-init_phase_history()
+#init_phase_history()
 
 bot.run(TOKEN)
