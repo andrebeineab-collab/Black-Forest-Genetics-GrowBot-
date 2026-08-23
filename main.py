@@ -461,6 +461,7 @@ async def historie(interaction: discord.Interaction):
 
     cursor.execute("""
         SELECT
+            id,
             zeitpunkt,
             temperatur,
             luftfeuchtigkeit,
@@ -515,6 +516,7 @@ async def historie(interaction: discord.Interaction):
     text = "## 📚 Growlog-Historie\n\n"
     for eintrag in eintraege:
         (
+            entry_id,
             zeitpunkt,
             temperatur,
             luftfeuchtigkeit,
@@ -525,6 +527,23 @@ async def historie(interaction: discord.Interaction):
             wuchshoehe,
             notizen
         ) = eintrag
+
+        photo_connection = get_db_connection()
+        photo_cursor = photo_connection.cursor()
+
+        photo_cursor.execute(
+            """
+            SELECT image_url
+            FROM photos
+            WHERE discord_thread_id = %s
+              AND entry_id = %s
+            ORDER BY id ASC
+            """,
+            (interaction.channel.id, entry_id)
+        )
+
+        foto_urls = [row[0] for row in photo_cursor.fetchall()]
+        photo_connection.close()
 
         zeitpunkt_dt = datetime.fromisoformat(zeitpunkt)
 
@@ -573,7 +592,9 @@ async def historie(interaction: discord.Interaction):
                 f"💡 **PPFD / DLI:** {ppfd_dli}\n"
                 f"📏 **Wuchshöhe:** {wuchshoehe}\n"
                 f"📝 **Notizen:** {notizen}\n"
-                f"\n──────────────\n\n"
+                f"📷 **Fotos:** {len(foto_urls)}\n"
+                + "".join(f"{foto_url}\n" for foto_url in foto_urls)
+                + "\n────────────────\n\n"
             )
     for i in range(0, len(text), 1900):
         await interaction.followup.send(
