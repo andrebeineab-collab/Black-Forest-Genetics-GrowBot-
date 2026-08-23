@@ -846,6 +846,80 @@ async def foto_historie(interaction: discord.Interaction):
             ephemeral=True
         )
 
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    if not isinstance(message.channel, discord.Thread):
+        return
+
+    if not message.attachments:
+        return
+
+    bilder = [
+        attachment
+        for attachment in message.attachments
+        if attachment.content_type
+        and attachment.content_type.startswith("image/")
+    ]
+
+    if not bilder:
+        return
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT id
+        FROM entries
+        WHERE discord_thread_id = %s
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (message.channel.id,)
+    )
+
+    letzter_eintrag = cursor.fetchone()
+
+    if not letzter_eintrag:
+        connection.close()
+        return
+
+    entry_id = letzter_eintrag[0]
+
+    for bild in bilder:
+        cursor.execute(
+            """
+            INSERT INTO photos (
+                discord_thread_id,
+                grower_id,
+                entry_id,
+                image_url,
+                message_id,
+                erstellt_am
+            )
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (
+                message.channel.id,
+                message.author.id,
+                entry_id,
+                bild.url,
+                message.id,
+                datetime.now(BERLIN_TZ).isoformat()
+            )
+        )
+
+    connection.commit()
+    connection.close()
+
+    try:
+        await message.add_reaction("✅")
+    except discord.Forbidden:
+        pass
+
 
 # -------------------------
 # Bot starten
