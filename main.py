@@ -760,6 +760,7 @@ async def foto_historie(interaction: discord.Interaction):
         SELECT
    image_url,
             grower_id,
+            entry_id,
             erstellt_am
         FROM photos
         WHERE discord_thread_id = %s
@@ -784,7 +785,7 @@ async def foto_historie(interaction: discord.Interaction):
         f"Gespeicherte Fotos: **{len(fotos)}**",
         ephemeral=True
     )
-    for image_url, grower_id, erstellt_am in fotos:
+    for image_url, grower_id, entry_id, erstellt_am in fotos:
 
         try:
             zeitpunkt = datetime.fromisoformat(str(erstellt_am))
@@ -807,6 +808,7 @@ async def foto_historie(interaction: discord.Interaction):
             title="📸 Growlog-Foto",
             description=(
                 f"👤 **Grower:** <@{grower_id}>\n"
+                f"📋 **Growlog-Eintrag:** {entry_id or '-'}\n"
                 f"🕒 **Zeitpunkt:** {zeit_text}"
             ),
             color=discord.Color.green()
