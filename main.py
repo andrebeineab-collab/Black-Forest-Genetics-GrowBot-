@@ -680,25 +680,41 @@ async def foto(
     connection = get_db_connection()
     cursor = connection.cursor()
 
-    cursor.execute(
+    cursor.execute(   
         """
-        INSERT INTO photos (
+            SELECT id
+            FROM entries
+            WHERE discord_thread_id = %s
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (interaction.channel.id,)
+        )
+
+        letzter_eintrag = cursor.fetchone()
+        entry_id = letzter_eintrag[0] if letzter_eintrag else None
+
+        cursor.execute(
+            """
+            INSERT INTO photos (
             discord_thread_id,
-            grower_id,
-            image_url,
-            message_id,
-            erstellt_am
+                grower_id,
+                entry_id,
+                image_url,
+                message_id,
+                erstellt_am
+            )
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (
+                interaction.channel.id,
+                interaction.user.id,
+                entry_id,
+                bild.url,
+                None,
+                datetime.now(BERLIN_TZ).isoformat()
+            )
         )
-        VALUES (%s, %s, %s, %s, %s)
-        """,
-        (
-            interaction.channel.id,
-            interaction.user.id,
-            bild.url,
-            None,
-            datetime.now(BERLIN_TZ).isoformat()
-        )
-    )
 
     connection.commit()
     connection.close()
