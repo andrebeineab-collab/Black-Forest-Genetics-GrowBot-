@@ -721,6 +721,92 @@ async def foto(
         ephemeral=True
     )
 
+@bot.tree.command(
+    name="foto-historie",
+    description="Zeigt die gespeicherten Fotos dieses Growlogs."
+)
+async def foto_historie(interaction: discord.Interaction):
+
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Benutze `/foto-historie` innerhalb eines Growlog-Threads.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+   image_url,
+            grower_id,
+            erstellt_am
+        FROM photos
+        WHERE discord_thread_id = %s
+        ORDER BY id DESC
+        LIMIT 10
+        """,
+        (interaction.channel.id,)
+    )
+
+    fotos = cursor.fetchall()
+    connection.close()
+
+    if not fotos:
+        await interaction.followup.send(
+            "📭 Für diesen Growlog wurden noch keine Fotos gespeichert.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.followup.send(
+        f"📸 **Foto-Historie**\n"
+        f"Gespeicherte Fotos: **{len(fotos)}**",
+        ephemeral=True
+    )
+    for image_url, grower_id, erstellt_am in fotos:
+
+        try:
+            zeitpunkt = datetime.fromisoformat(str(erstellt_am))
+
+            if zeitpunkt.tzinfo is None:
+                zeitpunkt = zeitpunkt.replace(
+                    tzinfo=timezone.utc
+                ).astimezone(BERLIN_TZ)
+            else:
+                zeitpunkt = zeitpunkt.astimezone(BERLIN_TZ)
+
+            zeit_text = zeitpunkt.strftime(
+                "%d.%m.%Y – %H:%M Uhr"
+            )
+
+        except (ValueError, TypeError):
+            zeit_text = str(erstellt_am)
+
+        embed = discord.Embed(
+            title="📸 Growlog-Foto",
+            description=(
+                f"👤 **Grower:** <@{grower_id}>\n"
+                f"🕒 **Zeitpunkt:** {zeit_text}"
+            ),
+            color=discord.Color.green()
+        )
+
+        embed.set_image(url=image_url)
+
+        embed.set_footer(
+            text="Black Forest Genetics • GrowBot"
+        )
+
+        await interaction.followup.send(
+            embed=embed,
+            ephemeral=True
+        )
+
 
 # -------------------------
 # Bot starten
