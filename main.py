@@ -691,30 +691,30 @@ async def foto(
             (interaction.channel.id,)
         )
 
-        letzter_eintrag = cursor.fetchone()
-        entry_id = letzter_eintrag[0] if letzter_eintrag else None
+    letzter_eintrag = cursor.fetchone()
+    entry_id = letzter_eintrag[0] if letzter_eintrag else None
 
-        cursor.execute(
-            """
-            INSERT INTO photos (
-            discord_thread_id,
-                grower_id,
-                entry_id,
-                image_url,
-                message_id,
-                erstellt_am
-            )
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (
-                interaction.channel.id,
-                interaction.user.id,
-                entry_id,
-                bild.url,
-                None,
-                datetime.now(BERLIN_TZ).isoformat()
-            )
+    cursor.execute(
+        """
+        INSERT INTO photos (
+        discord_thread_id,
+            grower_id,
+            entry_id,
+            image_url,
+            message_id,
+            erstellt_am
         )
+        VALUES (%s, %s, %s, %s, %s, %s)
+        """,
+        (
+            interaction.channel.id,
+            interaction.user.id,
+            entry_id,
+            bild.url,
+            None,
+            datetime.now(BERLIN_TZ).isoformat()
+        )
+    )
 
     connection.commit()
     connection.close()
