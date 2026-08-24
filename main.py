@@ -513,6 +513,11 @@ async def historie(interaction: discord.Interaction):
         )
         return
 
+    def anzeige_wert(wert):
+    if wert is None or wert == "":
+        return "—"
+    return wert
+
     foto_embeds = []
 
     text = "## 📚 Growlog-Historie\n\n"
@@ -586,17 +591,17 @@ async def historie(interaction: discord.Interaction):
         
         text += (
                 f"📅 **Zeitpunkt:** {zeitpunkt_text}\n"
-                f"🌡️ **Temperatur:** {temperatur}\n"
-                f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
-                f"🚿 **Gießen:** {giessen}\n"
-                f"🧪 **Düngung:** {duengung}\n"
-                f"⚗️ **pH:** {ph}\n"
-                f"💡 **PPFD / DLI:** {ppfd_dli}\n"
-                f"📏 **Wuchshöhe:** {wuchshoehe}\n"
-                f"📝 **Notizen:** {notizen}\n"
+                f"🌡️ **Temperatur:** {anzeige_wert(temperatur)}\n"
+                f"💧 **Luftfeuchtigkeit:** {anzeige_wert(luftfeuchtigkeit)}\n"
+                f"🚿 **Gießen:** {anzeige_wert(giessen)}\n"
+                f"🧪 **Düngung:** {anzeige_wert(duengung)}\n"
+                f"🚿 **pH:** {anzeige_wert(ph)}\n"
+                f"💡 **PPFD / DLI:** {anzeige_wert(ppfd_dli)}\n"
+                f"📏 **Wuchshöhe:** {anzeige_wert(wuchshoehe)}\n"
+                f"📝 **Notizen:** {anzeige_wert(notizen)}\n"
                 f"📷 **Fotos:** {len(foto_urls)}\n"
                 f"\n────────────────\n\n"
-            )
+        )
         for foto_url in foto_urls:
             foto_embed = discord.Embed(
                 title="📷 Growlog-Foto",
