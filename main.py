@@ -514,9 +514,9 @@ async def historie(interaction: discord.Interaction):
         return
 
     def anzeige_wert(wert):
-    if wert is None or wert == "":
-        return "—"
-    return wert
+        if wert is None or wert == "":
+            return "—"
+        return wert
 
     foto_embeds = []
 
