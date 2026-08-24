@@ -513,6 +513,8 @@ async def historie(interaction: discord.Interaction):
         )
         return
 
+    foto_embeds = []
+
     text = "## 📚 Growlog-Historie\n\n"
     for eintrag in eintraege:
         (
@@ -593,12 +595,31 @@ async def historie(interaction: discord.Interaction):
                 f"📏 **Wuchshöhe:** {wuchshoehe}\n"
                 f"📝 **Notizen:** {notizen}\n"
                 f"📷 **Fotos:** {len(foto_urls)}\n"
-                + "".join(f"{foto_url}\n" for foto_url in foto_urls)
-                + "\n────────────────\n\n"
+                f"\n────────────────\n\n"
             )
+        for foto_url in foto_urls:
+            foto_embed = discord.Embed(
+                title="📷 Growlog-Foto",
+                description=f"📋 **Growlog-Eintrag:** {entry_id}",
+                color=discord.Color.green()
+            )
+
+            foto_embed.set_image(url=foto_url)
+
+            foto_embed.set_footer(
+                text="Black Forest Genetics • GrowBot"
+            )
+
+            foto_embeds.append(foto_embed)
     for i in range(0, len(text), 1900):
         await interaction.followup.send(
             text[i:i + 1900], ephemeral=True
+        )
+
+    for foto_embed in foto_embeds:
+        await interaction.followup.send(
+            embed=foto_embed,
+            ephemeral=True
         )
 
 @bot.tree.command(
