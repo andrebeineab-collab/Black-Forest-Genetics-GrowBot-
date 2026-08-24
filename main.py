@@ -414,13 +414,29 @@ async def eintrag(
     )
     zeitpunkt = int(interaction.created_at.timestamp())
 
+    system = einheitensystem.value if einheitensystem else "DE"
+
+    if temperatur not in ("—", "-", ""):
+        temperatur_text = (
+            f"{temperatur} °F"
+            if system == "US"
+            else f"{temperatur} °C"
+        )
+    else:
+        temperatur_text = "—"
+
+    if luftfeuchtigkeit not in ("—", "-", ""):
+        luftfeuchtigkeit_text = f"{luftfeuchtigkeit} %"
+    else:
+        luftfeuchtigkeit_text = "—"
+    
     await interaction.followup.send(
         f"## 📋 Neuer Growlog-Eintrag\n"
         f"📅 **Zeitpunkt:** <t:{zeitpunkt}:F>\n"
         f"👤 **Grower:** {interaction.user.mention}\n\n"
         f"{alter_text}\n"
-        f"🌡️ **Temperatur:** {temperatur}\n"
-        f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit}\n"
+        f"🌡️ **Temperatur:** {temperatur_text}\n"
+        f"💧 **Luftfeuchtigkeit:** {luftfeuchtigkeit_text}\n"
         f"🚿 **Gießen:** {giessen_menge} {giessen_einheit.value if giessen_einheit else ''}\n"
         f"🧪 **Düngung:** {duenger_name} – {duengung_menge} {duengung_einheit.value if duengung_einheit else ''}\n"
         f"⚗️ **pH:** {ph if ph is not None else '—'}\n"
@@ -433,8 +449,8 @@ async def eintrag(
         interaction.channel.id,
         interaction.user.id,
         datetime.now(BERLIN_TZ).isoformat(),
-        temperatur,
-        luftfeuchtigkeit,
+        temperatur_text,
+        luftfeuchtigkeit_text,
         f"{giessen_menge} {giessen_einheit.value if giessen_einheit else ''}",
         f"{duenger_name} – {duengung_menge} {duengung_einheit.value if duengung_einheit else ''}",
         ph,
