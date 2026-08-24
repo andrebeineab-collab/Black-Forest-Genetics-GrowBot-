@@ -337,6 +337,7 @@ async def pflanze_info(interaction: discord.Interaction):
 @app_commands.describe(
     temperatur="Temperatur, zum Beispiel 24 °C",
     luftfeuchtigkeit="Luftfeuchtigkeit, zum Beispiel 65 %",
+    temp_system="Einheitensystem für Temperatur auswählen",
     giessen_menge="Gießmenge – nur die Zahl eingeben",
     giessen_einheit="Einheit der Gießmenge auswählen",
     duenger_name="Name des verwendeten Düngers",
@@ -349,6 +350,10 @@ async def pflanze_info(interaction: discord.Interaction):
     notizen="Weitere Beobachtungen"
 )
 @app_commands.choices(
+    temp_system=[
+        app_commands.Choice(name="🇩🇪 Deutsch – °C / %", value="DE"),
+        app_commands.Choice(name="🇺🇸 US – °F / %", value="US")
+    ],
     giessen_einheit=[
         app_commands.Choice(name="ml", value="ml"),
         app_commands.Choice(name="L", value="L")
@@ -369,6 +374,7 @@ async def eintrag(
     keimdatum: str = "_",
     temperatur: str = "—",
     luftfeuchtigkeit: str = "—",
+    temp_system: app_commands.Choice[str] | None = None,
     giessen_menge: str = "—",
     giessen_einheit: app_commands.Choice[str] = None,
     duenger_name: str = "_",
@@ -414,7 +420,7 @@ async def eintrag(
     )
     zeitpunkt = int(interaction.created_at.timestamp())
 
-    system = einheitensystem.value if einheitensystem else "DE"
+    system = temp_system.value if temp_system else "DE"
 
     if temperatur not in ("—", "-", ""):
         temperatur_text = (
