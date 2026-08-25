@@ -976,7 +976,7 @@ async def diagramm(
         fig2.suptitle(
             f"🌱 Black Forest Genetics – {interaction.channel.name}"
         )
-            fig2.tight_layout()
+        fig2.tight_layout()
 
         bild2 = io.BytesIO()
         fig2.savefig(
