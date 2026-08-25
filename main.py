@@ -655,6 +655,210 @@ async def historie(interaction: discord.Interaction):
         )
 
 @bot.tree.command(
+    name="diagramm",
+    description="Zeigt Temperatur und Luftfeuchtigkeit als Growlog-Diagramm."
+)
+@app_commands.describe(
+    temp_system="Temperaturanzeige für das Diagramm auswählen"
+)
+@app_commands.choices(
+    temp_system=[
+        app_commands.Choice(name="🇩🇪 Deutsch – °C", value="DE"),
+        app_commands.Choice(name="🇺🇸 US – °F", value="US")
+    ]
+)
+async def diagramm(
+    interaction: discord.Interaction,
+    temp_system: app_commands.Choice[str] | None = None
+):
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+     "❌ Benutze `/diagramm` innerhalb eines Growlog-Threads.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            zeitpunkt,
+            temperatur,
+            luftfeuchtigkeit
+        FROM entries
+        WHERE discord_thread_id = %s
+        ORDER BY id ASC
+        """,
+        (interaction.channel.id,)
+    )
+
+    eintraege = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    if not eintraege:
+        await interaction.followup.send(
+            "📭 Für diesen Growlog sind noch keine Daten vorhanden.",
+            ephemeral=True
+        )
+        return
+
+    import io
+    import re
+    from datetime import datetime
+    from matplotlib.figure import Figure
+
+    system = temp_system.value if temp_system else "DE"
+
+    zeitpunkte = []
+    temperaturen = []
+    luftwerte = []
+
+    def zahl_lesen(wert):
+        if wert is None:
+            return None
+
+        text = str(wert).strip()
+
+        if text in ("", "-", "—", "_"):
+            return None
+
+        treffer = re.search(r"-?\d+(?:[.,]\d+)?", text)
+        if not treffer:
+            return None
+
+        return float(
+            treffer.group(0).replace(",", ".")
+        )
+
+    for zeitpunkt, temperatur, luftfeuchtigkeit in eintraege:
+
+        temp = zahl_lesen(temperatur)
+        luft = zahl_lesen(luftfeuchtigkeit)
+
+        if temp is None and luft is None:
+            continue
+
+        # Gespeicherte Fahrenheit-Werte zuerst in Celsius umrechnen
+        if temp is not None:
+            temperatur_string = str(temperatur).upper()
+
+            if "°F" in temperatur_string or " F" in temperatur_string:
+                temp = (temp - 32) * 5 / 9
+                # Für US-Diagramm wieder in Fahrenheit umrechnen
+            if system == "US":
+                temp = (temp * 9 / 5) + 32
+
+        try:
+            datum = datetime.fromisoformat(str(zeitpunkt))
+            datum_text = datum.strftime("%d.%m.")
+        except (ValueError, TypeError):
+            datum_text = str(zeitpunkt)[:10]
+
+        zeitpunkte.append(datum_text)
+        temperaturen.append(temp)
+        luftwerte.append(luft)
+
+    if not zeitpunkte:
+        await interaction.followup.send(
+            "📊 Noch keine auswertbaren Temperatur- oder Luftfeuchtigkeitswerte vorhanden.",
+            ephemeral=True
+        )
+        return
+        fig = Figure(figsize=(9, 5))
+    ax1 = fig.subplots()
+
+    x = list(range(len(zeitpunkte)))
+
+    temp_einheit = "°F" if system == "US" else "°C"
+
+    temp_x = [
+        x[i]
+        for i, wert in enumerate(temperaturen)
+        if wert is not None
+    ]
+
+    temp_y = [
+        wert
+        for wert in temperaturen
+        if wert is not None
+    ]
+
+    luft_x = [
+        x[i]
+        for i, wert in enumerate(luftwerte)
+        if wert is not None
+    ]
+
+    luft_y = [
+        wert
+        for wert in luftwerte
+        if wert is not None
+    ]
+    if temp_y:
+        ax1.plot(
+            temp_x,
+            temp_y,
+            marker="o",
+            label=f"Temperatur ({temp_einheit})"
+        )
+
+    ax1.set_xlabel("Growlog")
+    ax1.set_ylabel(f"Temperatur ({temp_einheit})")
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(
+        zeitpunkte,
+        rotation=45,
+        ha="right"
+    )
+    ax1.grid(True, alpha=0.3)
+
+    ax2 = ax1.twinx()
+
+    if luft_y:
+        ax2.plot(
+            luft_x,
+            luft_y,
+            marker="s",
+            linestyle="--",
+            label="Luftfeuchtigkeit (%)"
+        )
+        ax2.set_ylabel("Luftfeuchtigkeit (%)")
+
+    fig.suptitle(
+        f"🌱 Black Forest Genetics – {interaction.channel.name}"
+    )
+
+    fig.tight_layout()
+
+    bild = io.BytesIO()
+    fig.savefig(
+        bild,
+        format="png",
+        dpi=150,
+        bbox_inches="tight"
+    )
+    bild.seek(0)
+
+    datei = discord.File(
+        bild,
+        filename="growlog_diagramm.png"
+    )
+
+    await interaction.followup.send(
+        "📊 **Growlog-Diagramm**\n"
+        f"🌡️ Temperatur: **{temp_einheit}**\n"
+        "💧 Luftfeuchtigkeit: **%**",
+        file=datei,
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="phasen-historie",
     description="Zeigt die gespeicherten Phasenänderungen dieser Pflanze."
 )
