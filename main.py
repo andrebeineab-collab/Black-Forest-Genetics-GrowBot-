@@ -466,7 +466,7 @@ async def eintrag(
         f"{duenger_name} – {duengung_menge} {duengung_einheit.value if duengung_einheit else ''}",
         ph,
         ppfd_dli,
-        wuchshoehe,
+        f"{wuchshoehe} {wuchshoehe_einheit.value if wuchshoehe_einheit else ''}".strip(),
         notizen
     )
 @bot.tree.command(
@@ -688,7 +688,10 @@ async def diagramm(
         SELECT
             zeitpunkt,
             temperatur,
-            luftfeuchtigkeit
+            luftfeuchtigkeit,
+            giessen,
+            wuchshoehe,
+            ppfd_dli
         FROM entries
         WHERE discord_thread_id = %s
         ORDER BY id ASC
@@ -718,6 +721,9 @@ async def diagramm(
     zeitpunkte = []
     temperaturen = []
     luftwerte = []
+    giesswerte = []
+    hoehenwerte = []
+    ppfd_werte = []
 
     def zahl_lesen(wert):
         if wert is None:
@@ -736,23 +742,44 @@ async def diagramm(
             treffer.group(0).replace(",", ".")
         )
 
-    for zeitpunkt, temperatur, luftfeuchtigkeit in eintraege:
+    for zeitpunkt, temperatur, luftfeuchtigkeit, giessen, wuchshoehe, ppfd_dli in eintraege:
 
         temp = zahl_lesen(temperatur)
         luft = zahl_lesen(luftfeuchtigkeit)
+        giessen_wert = zahl_lesen(giessen)
+        hoehe_wert = zahl_lesen(wuchshoehe)
+        ppfd_wert = zahl_lesen(ppfd_dli)
 
-        if temp is None and luft is None:
+        if all(wert is None for wert in (temp, luft, giessen_wert, hoehe_wert, ppfd_wert)):
             continue
+        # Gießmenge einheitlich in ml umrechnen
+        if giessen_wert is not None:
+            giessen_text = str(giessen).lower()
 
+        if "ml" not in giessen_text and "l" in giessen_text:
+            giessen_wert *= 1000
+
+        # Wuchshöhe einheitlich in cm umrechnen
+        if hoehe_wert is not None:
+            hoehe_text = str(wuchshoehe).lower()
+
+        if "ft" in hoehe_text:
+            hoehe_wert *= 30.48
+        elif "in" in hoehe_text:
+            hoehe_wert *= 2.54
+        elif "cm" in hoehe_text:
+            pass
+        elif "m" in hoehe_text:
+            hoehe_wert *= 100
         # Gespeicherte Fahrenheit-Werte zuerst in Celsius umrechnen
         if temp is not None:
             temperatur_string = str(temperatur).upper()
 
-            if "°F" in temperatur_string or " F" in temperatur_string:
-                temp = (temp - 32) * 5 / 9
-                # Für US-Diagramm wieder in Fahrenheit umrechnen
-            if system == "US":
-                temp = (temp * 9 / 5) + 32
+        if "°F" in temperatur_string or " F" in temperatur_string:
+            temp = (temp - 32) * 5 / 9
+            # Für US-Diagramm wieder in Fahrenheit umrechnen
+        if system == "US":
+            temp = (temp * 9 / 5) + 32
 
         try:
             datum = datetime.fromisoformat(str(zeitpunkt))
@@ -763,6 +790,9 @@ async def diagramm(
         zeitpunkte.append(datum_text)
         temperaturen.append(temp)
         luftwerte.append(luft)
+        giesswerte.append(giessen_wert)
+        hoehenwerte.append(hoehe_wert)
+        ppfd_werte.append(ppfd_wert)
 
     if not zeitpunkte:
         await interaction.followup.send(
@@ -798,6 +828,41 @@ async def diagramm(
     luft_y = [
         wert
         for wert in luftwerte
+        if wert is not None
+    ]
+    giess_x = [
+        x[i]
+        for i, wert in enumerate(giesswerte)
+        if wert is not None
+    ]
+
+    giess_y = [
+        wert
+        for wert in giesswerte
+        if wert is not None
+    ]
+
+    hoehe_x = [
+        x[i]
+        for i, wert in enumerate(hoehenwerte)
+        if wert is not None
+    ]
+
+    hoehe_y = [
+        wert
+        for wert in hoehenwerte
+        if wert is not None
+    ]
+
+    ppfd_x = [
+        x[i]
+        for i, wert in enumerate(ppfd_werte)
+        if wert is not None
+    ]
+
+    ppfd_y = [
+        wert
+        for wert in ppfd_werte
         if wert is not None
     ]
     if temp_y:
@@ -857,6 +922,81 @@ async def diagramm(
         file=datei,
         ephemeral=True
     )
+
+    #Zweites Diagramm: Gießen, Wuchshöhe und PPFD
+    if giess_y or hoehe_y or ppfd_y:
+        fig2 = Figure(figsize=(9, 8))
+        ax_giessen, ax_hoehe, ax_ppfd = fig2.subplots(
+            3,
+            1,
+            sharex=True
+        )
+
+        # Gießen
+        if giess_y:
+            ax_giessen.plot(
+                giess_x,
+                giess_y,
+                marker="o"
+            )
+
+        ax_giessen.set_ylabel("Gießen (ml)")
+        ax_giessen.grid(True, alpha=0.3)
+
+        # Wuchshöhe
+        if hoehe_y:
+            ax_hoehe.plot(
+                hoehe_x,
+                hoehe_y,
+                marker="o"
+            )
+
+        ax_hoehe.set_ylabel("Wuchshöhe (cm)")
+        ax_hoehe.grid(True, alpha=0.3)
+
+        # PPFD / DLI
+        if ppfd_y:
+            ax_ppfd.plot(
+                ppfd_x,
+                ppfd_y,
+                marker="o"
+            )
+
+        ax_ppfd.set_ylabel("PPFD / DLI")
+        ax_ppfd.set_xlabel("Growlog")
+        ax_ppfd.grid(True, alpha=0.3)
+
+        ax_ppfd.set_xticks(x)
+        ax_ppfd.set_xticklabels(
+            zeitpunkte,
+            rotation=45,
+            ha="right"
+        )
+
+        fig2.suptitle(
+            f"🌱 Black Forest Genetics – {interaction.channel.name}"
+        )
+            fig2.tight_layout()
+
+        bild2 = io.BytesIO()
+        fig2.savefig(
+            bild2,
+            format="png",
+            dpi=150,
+            bbox_inches="tight"
+        )
+        bild2.seek(0)
+
+        datei2 = discord.File(
+            bild2,
+            filename="growlog_werte_diagramm.png"
+        )
+
+        await interaction.followup.send(
+            "📊 **Gießen · Wuchshöhe · PPFD / DLI**",
+            file=datei2,
+            ephemeral=True
+        )
 
 @bot.tree.command(
     name="phasen-historie",
