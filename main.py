@@ -1,6 +1,11 @@
 import os
 import threading
 import psycopg2
+import io
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 from flask import Flask
 import discord
