@@ -768,7 +768,7 @@ async def diagramm(
             elif "in" in hoehe_text:
                 hoehe_wert *= 2.54
             elif "cm" in hoehe_text:
-                passt 
+                pass
             elif "m" in hoehe_text:
                 hoehe_wert *= 100
         # Gespeicherte Fahrenheit-Werte zuerst in Celsius umrechnen
