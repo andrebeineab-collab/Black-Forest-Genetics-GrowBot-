@@ -756,21 +756,21 @@ async def diagramm(
         if giessen_wert is not None:
             giessen_text = str(giessen).lower()
 
-        if "ml" not in giessen_text and "l" in giessen_text:
-            giessen_wert *= 1000
+            if "ml" not in giessen_text and "l" in giessen_text:
+                giessen_wert *= 1000
 
         # Wuchshöhe einheitlich in cm umrechnen
         if hoehe_wert is not None:
             hoehe_text = str(wuchshoehe).lower()
 
-        if "ft" in hoehe_text:
-            hoehe_wert *= 30.48
-        elif "in" in hoehe_text:
-            hoehe_wert *= 2.54
-        elif "cm" in hoehe_text:
-            pass
-        elif "m" in hoehe_text:
-            hoehe_wert *= 100
+            if "ft" in hoehe_text:
+                hoehe_wert *= 30.48
+            elif "in" in hoehe_text:
+                hoehe_wert *= 2.54
+            elif "cm" in hoehe_text:
+                passt 
+            elif "m" in hoehe_text:
+                hoehe_wert *= 100
         # Gespeicherte Fahrenheit-Werte zuerst in Celsius umrechnen
         if temp is not None:
             temperatur_string = str(temperatur).upper()
