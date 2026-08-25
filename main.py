@@ -770,7 +770,7 @@ async def diagramm(
             ephemeral=True
         )
         return
-        fig = Figure(figsize=(9, 5))
+    fig = Figure(figsize=(9, 5))
     ax1 = fig.subplots()
 
     x = list(range(len(zeitpunkte)))
