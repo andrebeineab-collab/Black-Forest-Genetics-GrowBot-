@@ -97,6 +97,27 @@ def init_db():
             geaendert_am TEXT NOT NULL
         )
     """)
+
+    # Breeder-Projekte
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS breeder_projects (
+            id BIGSERIAL PRIMARY KEY,
+            discord_channel_id BIGINT,
+            discord_thread_id BIGINT,
+            grower_id BIGINT NOT NULL,
+            projektname TEXT NOT NULL,
+            mutterpflanze TEXT,
+            vaterpflanze TEXT,
+            kreuzung TEXT,
+            generation TEXT,
+            samenanzahl INTEGER,
+            keimrate TEXT,
+            phaenotypen TEXT,
+            selektion TEXT,
+            besonderheiten TEXT,
+            erstellt_am TEXT
+        )
+    """)
     
     # Pflanzenprofil erweitern
     cursor.execute("""
