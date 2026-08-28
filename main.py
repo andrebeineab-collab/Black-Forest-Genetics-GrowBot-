@@ -1440,6 +1440,68 @@ def speichere_pflanze(
 
     connection.commit()
     connection.close()
+
+def erstelle_breeder_projekt(
+    discord_channel_id,
+    discord_thread_id,
+    grower_id,
+    projektname,
+    mutterpflanze,
+    vaterpflanze,
+    kreuzung,
+    generation,
+    samenanzahl,
+    keimrate,
+    phaenotypen,
+    selektion,
+    besonderheiten
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO breeder_projects (
+            discord_channel_id,
+            discord_thread_id,
+            grower_id,
+            projektname,
+            mutterpflanze,
+            vaterpflanze,
+            kreuzung,
+            generation,
+            samenanzahl,
+            keimrate,
+            phaenotypen,
+            selektion,
+            besonderheiten,
+            erstellt_am
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING id
+    """, (
+        discord_channel_id,
+        discord_thread_id,
+        grower_id,
+        projektname,
+        mutterpflanze,
+        vaterpflanze,
+        kreuzung,
+        generation,
+        samenanzahl,
+        keimrate,
+        phaenotypen,
+        selektion,
+        besonderheiten,
+        datetime.now().isoformat()
+    ))
+
+    projekt_id = cursor.fetchone()[0]
+
+    connection.commit()
+    connection.close()
+
+    return projekt_id
+
 def lade_pflanze(thread_id):
     connection = get_db_connection()
     cursor = connection.cursor()
