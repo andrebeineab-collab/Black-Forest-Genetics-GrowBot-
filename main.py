@@ -1574,6 +1574,48 @@ def aktualisiere_pflanze(
     connection.commit()
     connection.close()
 
+def bearbeite_breeder_projekt(
+    projekt_id,
+    grower_id,
+    generation=None,
+    samenanzahl=None,
+    keimrate=None,
+    phaenotypen=None,
+    selektion=None,
+    besonderheiten=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        UPDATE breeder_projects
+        SET
+            generation = COALESCE(%s, generation),
+            samenanzahl = COALESCE(%s, samenanzahl),
+            keimrate = COALESCE(%s, keimrate),
+            phaenotypen = COALESCE(%s, phaenotypen),
+            selektion = COALESCE(%s, selektion),
+            besonderheiten = COALESCE(%s, besonderheiten)
+        WHERE id = %s
+          AND grower_id = %s
+    """, (
+        generation,
+        samenanzahl,
+        keimrate,
+        phaenotypen,
+        selektion,
+        besonderheiten,
+        projekt_id,
+        grower_id
+    ))
+
+    geaendert = cursor.rowcount
+
+    connection.commit()
+    connection.close()
+
+    return geaendert
+
 
 def speichere_eintrag(
     discord_thread_id,
