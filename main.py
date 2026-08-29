@@ -2564,6 +2564,8 @@ threading.Thread(
 
 #init_phase_history()
 
+
+init_db()
 init_photos()
 
 bot.run(TOKEN)
