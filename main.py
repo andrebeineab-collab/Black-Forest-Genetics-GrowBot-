@@ -1616,6 +1616,37 @@ def bearbeite_breeder_projekt(
 
     return geaendert
 
+def lade_breeder_projekt(projekt_id, grower_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            projektname,
+            mutterpflanze,
+            vaterpflanze,
+            kreuzung,
+            generation,
+            samenanzahl,
+            keimrate,
+            phaenotypen,
+            selektion,
+            besonderheiten,
+            erstellt_am
+        FROM breeder_projects
+        WHERE id = %s
+          AND grower_id = %s
+    """, (
+        projekt_id,
+        grower_id
+    ))
+
+    projekt = cursor.fetchone()
+
+    connection.close()
+
+    return projekt
 
 def speichere_eintrag(
     discord_thread_id,
