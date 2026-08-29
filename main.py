@@ -2346,6 +2346,87 @@ async def breeder_erstellen(
     await interaction.response.send_message(embed=embed)
 
 @bot.tree.command(
+    name="breeder-bearbeiten",
+    description="Bearbeitet ein vorhandenes Breeder-Projekt."
+)
+@app_commands.describe(
+    projekt_id="Projekt-ID des Breeder-Projekts",
+    generation="Neue Generation, z.B. F2 oder BX1",
+    samenanzahl="Neue Samenanzahl",
+    keimrate="Neue Keimrate, z.B. 95 %",
+    phaenotypen="Neue oder ergänzte Phänotypen",
+    selektion="Neue Selektion",
+    besonderheiten="Neue Besonderheiten oder Notizen"
+)
+async def breeder_bearbeiten(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    generation: str = None,
+    samenanzahl: int = None,
+    keimrate: str = None,
+    phaenotypen: str = None,
+    selektion: str = None,
+    besonderheiten: str = None
+):
+    if (
+        generation is None
+        and samenanzahl is None
+     and keimrate is None
+        and phaenotypen is None
+        and selektion is None
+        and besonderheiten is None
+    ):
+        await interaction.response.send_message(
+            "❌ Bitte gib mindestens ein Feld an, das geändert werden soll.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    geaendert = bearbeite_breeder_projekt(
+        projekt_id,
+        interaction.user.id,
+        generation,
+        samenanzahl,
+        keimrate,
+        phaenotypen,
+        selektion,
+        besonderheiten
+    )
+
+    if geaendert == 0:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden oder du bist nicht der Besitzer.",
+            ephemeral=True
+        )
+        return
+
+    text = f"✅ **Breeder-Projekt {projekt_id} aktualisiert.**"
+
+    if generation is not None:
+        text += f"\n🧬 Generation: **{generation}**"
+
+    if samenanzahl is not None:
+        text += f"\n🌰 Samenanzahl: **{samenanzahl}**"
+
+    if keimrate is not None:
+        text += f"\n📈 Keimrate: **{keimrate}**"
+
+    if phaenotypen is not None:
+        text += f"\n🌱 Phänotypen: **{phaenotypen}**"
+
+    if selektion is not None:
+        text += f"\n🏆 Selektion: **{selektion}**"
+
+    if besonderheiten is not None:
+        text += f"\n📝 Besonderheiten: **{besonderheiten}**"
+    await interaction.followup.send(
+        text,
+        ephemeral=True
+        )
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
