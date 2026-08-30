@@ -118,6 +118,19 @@ def init_db():
             erstellt_am TEXT
         )
     """)
+
+    # Breeder-Stammbaum / Abstammung
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS breeder_lineage (
+            id BIGSERIAL PRIMARY KEY,
+            projekt_id BIGINT NOT NULL,
+            mutter_projekt_id BIGINT,
+            vater_projekt_id BIGINT,
+            grower_id BIGINT NOT NULL,
+            erstellt_am TEXT,
+            UNIQUE (projekt_id)
+        )
+    """)
     
     # Pflanzenprofil erweitern
     cursor.execute("""
