@@ -1720,6 +1720,28 @@ def speichere_breeder_stammbaum(
 
     return True
 
+def lade_breeder_stammbaum(projekt_id, grower_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            mutter_projekt_id,
+            vater_projekt_id
+        FROM breeder_lineage
+        WHERE projekt_id = %s
+        AND grower_id = %s
+    """, (
+        projekt_id,
+        grower_id
+    ))
+
+    stammbaum = cursor.fetchone()
+
+    connection.close()
+
+    return stammbaum
+
 def speichere_eintrag(
     discord_thread_id,
     grower_id,
@@ -2788,6 +2810,96 @@ async def stammbaum_setzen(
         text += f"\n🌿 Vaterlinie: **Projekt #{vater_projekt_id}**"
     await interaction.followup.send(
         text,
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="stammbaum-anzeigen",
+    description="Zeigt den Stammbaum eines Breeder-Projekts."
+)
+@app_commands.describe(
+    projekt_id="Projekt-ID des Breeder-Projekts"
+)
+async def stammbaum_anzeigen(
+    interaction: discord.Interaction,
+    projekt_id: int
+):
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.response.send_message(
+            "❌ Breeder-Projekt nicht gefunden oder gehört dir nicht.",
+            ephemeral=True
+        )
+        return
+        stammbaum = lade_breeder_stammbaum(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if stammbaum is None:
+        await interaction.response.send_message(
+            "❌ Für dieses Breeder-Projekt wurde noch kein Stammbaum gespeichert.",
+            ephemeral=True
+        )
+        return
+
+    mutter_projekt_id, vater_projekt_id = stammbaum
+
+    projektname = projekt[1]
+
+    mutter_text = "Nicht gesetzt"
+    vater_text = "Nicht gesetzt"
+
+    if mutter_projekt_id is not None:
+        mutter = lade_breeder_projekt(
+            mutter_projekt_id,
+            interaction.user.id
+        )
+
+        if mutter is not None:
+            mutter_text = f"**#{mutter[0]} • {mutter[1]}**"
+    if vater_projekt_id is not None:
+        vater = lade_breeder_projekt(
+            vater_projekt_id,
+            interaction.user.id
+        )
+
+        if vater is not None:
+            vater_text = f"**#{vater[0]} • {vater[1]}**"
+
+    embed = discord.Embed(
+        title=f"🧬 Stammbaum – {projektname}",
+        description=f"Breeder-Projekt **#{projekt_id}**"
+    )
+
+    embed.add_field(
+        name="🌱 Mutterlinie",
+        value=mutter_text,
+        inline=False
+    )
+
+    embed.add_field(
+        name="🧬 Nachkomme",
+        value=f"**#{projekt_id} • {projektname}**",
+        inline=False
+    )
+
+    embed.add_field(
+        name="🌿 Vaterlinie",
+        value=vater_text,
+        inline=False
+    )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    await interaction.response.send_message(
+        embed=embed,
         ephemeral=True
     )
 
