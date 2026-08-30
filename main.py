@@ -1648,6 +1648,29 @@ def lade_breeder_projekt(projekt_id, grower_id):
 
     return projekt
 
+def lade_breeder_projekte(grower_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            projektname,
+            kreuzung,
+            generation
+        FROM breeder_projects
+        WHERE grower_id = %s
+        ORDER BY id DESC
+    """, (
+        grower_id,
+    ))
+
+    projekte = cursor.fetchall()
+
+    connection.close()
+
+    return projekte
+
 def speichere_eintrag(
     discord_thread_id,
     grower_id,
