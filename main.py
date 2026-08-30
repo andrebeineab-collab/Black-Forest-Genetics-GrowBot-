@@ -2590,6 +2590,60 @@ async def breeder_anzeigen(
     await interaction.response.send_message(embed=embed)
 
 @bot.tree.command(
+    name="breeder-liste",
+    description="Zeigt deine gespeicherten Breeder-Projekte."
+)
+async def breeder_liste(
+    interaction: discord.Interaction
+):
+    projekte = lade_breeder_projekte(
+        interaction.user.id
+    )
+
+    if not projekte:
+        await interaction.response.send_message(
+            "❌ Du hast noch keine Breeder-Projekte gespeichert.",
+            ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title="🧬 Meine Breeder-Projekte",
+        description=f"Gespeicherte Projekte: **{len(projekte)}**"
+    )
+
+    for projekt in projekte[:20]:
+        (
+            projekt_id,
+            projektname,
+            kreuzung,
+            generation
+        ) = projekt
+
+        embed.add_field(
+            name=f"#{projekt_id} • {projektname}",
+            value=(
+                f"🧬 Kreuzung: **{kreuzung or '-'}**\n"
+                f"🔬 Generation: **{generation or '-'}**"
+            ),
+            inline=False
+        )
+
+    if len(projekte) > 20:
+        embed.set_footer(
+            text=f"Black Forest Genetics • Zeigt 20 von {len(projekte)} Projekten"
+        )
+    else:
+        embed.set_footer(
+            text="Black Forest Genetics • Breeder Database"
+        )
+
+    await interaction.response.send_message(
+        embed=embed,
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
