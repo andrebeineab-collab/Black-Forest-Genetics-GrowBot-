@@ -2898,8 +2898,23 @@ async def stammbaum_anzeigen(
         text="Black Forest Genetics • Breeder Database"
     )
 
+    stammbaum_channel = interaction.guild.get_channel(
+    1533496327076577430
+)
+
+    if stammbaum_channel is None:
+        await interaction.response.send_message(
+            "❌ Der Kanal #stammbäume wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    await stammbaum_channel.send(
+        embed=embed
+    )
+
     await interaction.response.send_message(
-        embed=embed,
+        f"✅ Stammbaum wurde in {stammbaum_channel.mention} veröffentlicht.",
         ephemeral=True
     )
 
