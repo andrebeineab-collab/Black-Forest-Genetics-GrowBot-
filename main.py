@@ -2835,7 +2835,7 @@ async def stammbaum_anzeigen(
             ephemeral=True
         )
         return
-        stammbaum = lade_breeder_stammbaum(
+    stammbaum = lade_breeder_stammbaum(
         projekt_id,
         interaction.user.id
     )
