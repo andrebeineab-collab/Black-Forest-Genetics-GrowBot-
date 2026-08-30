@@ -1742,6 +1742,67 @@ def lade_breeder_stammbaum(projekt_id, grower_id):
 
     return stammbaum
 
+def lade_breeder_stammbaum_mehrstufig(
+    projekt_id,
+    grower_id,
+    tiefe=0,
+    max_tiefe=3,
+    besucht=None
+):
+    if besucht is None:
+        besucht = set()
+
+    if projekt_id in besucht:
+        return None
+
+    if tiefe > max_tiefe:
+        return None
+
+    besucht.add(projekt_id)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        grower_id
+    )
+
+    if projekt is None:
+        return None
+
+    stammbaum = lade_breeder_stammbaum(
+        projekt_id,
+        grower_id
+    )
+    daten = {
+        "id": projekt[0],
+        "name": projekt[1],
+        "mutter": None,
+        "vater": None
+    }
+
+    if stammbaum is None:
+        return daten
+
+    mutter_projekt_id, vater_projekt_id = stammbaum
+
+    if mutter_projekt_id is not None:
+        daten["mutter"] = lade_breeder_stammbaum_mehrstufig(
+            mutter_projekt_id,
+            grower_id,
+            tiefe + 1,
+            max_tiefe,
+            besucht.copy()
+        )
+
+    if vater_projekt_id is not None:
+        daten["vater"] = lade_breeder_stammbaum_mehrstufig(
+            vater_projekt_id,
+            grower_id,
+            tiefe + 1,
+            max_tiefe,
+            besucht.copy()
+        )
+        return daten
+
 def speichere_eintrag(
     discord_thread_id,
     grower_id,
