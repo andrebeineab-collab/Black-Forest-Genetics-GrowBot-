@@ -2693,6 +2693,105 @@ async def breeder_liste(
     )
 
 @bot.tree.command(
+    name="stammbaum-setzen",
+    description="Verknüpft ein Breeder-Projekt mit Mutter- und Vaterlinie."
+)
+@app_commands.describe(
+    projekt_id="Projekt-ID des Nachkommens",
+    mutter_projekt_id="Projekt-ID der Mutterlinie",
+    vater_projekt_id="Projekt-ID der Vaterlinie"
+)
+async def stammbaum_setzen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    mutter_projekt_id: int = None,
+    vater_projekt_id: int = None
+):
+    if mutter_projekt_id is None and vater_projekt_id is None:
+        await interaction.response.send_message(
+            "❌ Bitte gib mindestens eine Mutter- oder Vater-Projekt-ID an.",
+            ephemeral=True
+        )
+        return
+
+    if projekt_id == mutter_projekt_id or projekt_id== vater_projekt_id:
+        await interaction.response.send_message(
+            "❌ Ein Projekt kann nicht sein eigener Elternteil sein.",
+            ephemeral=True
+        )
+        return
+
+    if (
+        mutter_projekt_id is not None
+        and vater_projekt_id is not None
+        and mutter_projekt_id == vater_projekt_id
+    ):
+        await interaction.response.send_message(
+            "❌ Mutter- und Vaterprojekt dürfen nicht identisch sein.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Das Breeder-Projekt wurde nicht gefunden oder gehört dir nicht.",
+            ephemeral=True
+        )
+        return
+
+    if mutter_projekt_id is not None:
+        mutter = lade_breeder_projekt(
+            mutter_projekt_id,
+            interaction.user.id
+        )
+
+        if mutter is None:
+            await interaction.followup.send(
+                "❌ Das angegebene Mutterprojekt wurde nicht gefunden oder gehört dir nicht.",
+                ephemeral=True
+            )
+            return
+
+    if vater_projekt_id is not None:
+        vater = lade_breeder_projekt(
+            vater_projekt_id,
+            interaction.user.id
+      )
+
+        if vater is None:
+            await interaction.followup.send(
+                "❌ Das angegebene Vaterprojekt wurde nicht gefunden oder gehört dir nicht.",
+                ephemeral=True
+            )
+            return
+
+    speichere_breeder_stammbaum(
+        projekt_id,
+        interaction.user.id,
+        mutter_projekt_id,
+        vater_projekt_id
+    )
+
+    text = f"✅ **Stammbaum für Breeder-Projekt #{projekt_id} gespeichert.**"
+
+    if mutter_projekt_id is not None:
+        text += f"\n🌱 Mutterlinie: **Projekt #{mutter_projekt_id}**"
+
+    if vater_projekt_id is not None:
+        text += f"\n🌿 Vaterlinie: **Projekt #{vater_projekt_id}**"
+    await interaction.followup.send(
+        text,
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
