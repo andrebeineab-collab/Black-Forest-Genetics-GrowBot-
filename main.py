@@ -2458,6 +2458,115 @@ async def breeder_bearbeiten(
         )
 
 @bot.tree.command(
+    name="breeder-anzeigen",
+    description="Zeigt ein gespeichertes Breeder-Projekt an."
+)
+@app_commands.describe(
+    projekt_id="Projekt-ID des Breeder-Projekts"
+)
+async def breeder_anzeigen(
+    interaction: discord.Interaction,
+    projekt_id: int
+):
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.response.send_message(
+            "❌ Breeder-Projekt nicht gefunden oder du bist nicht der Besitzer.",
+            ephemeral=True
+        )
+        return
+
+    (
+        projekt_id_db,
+        projektname,
+        mutterpflanze,
+        vaterpflanze,
+        kreuzung,
+        generation,
+        samenanzahl,
+        keimrate,
+        phaenotypen,
+        selektion,
+        besonderheiten,
+        erstellt_am
+    ) = projekt
+
+    embed = discord.Embed(
+        title=f"🧬 Breeder-Projekt – {projektname}",
+        description=f"Projekt-ID: **{projekt_id_db}**"
+    )
+
+    embed.add_field(
+        name="🌱 Mutterpflanze",
+        value=mutterpflanze or "-",
+        inline=True
+    )
+
+    embed.add_field(
+        name="🌿 Vaterpflanze",
+        value=vaterpflanze or "-",
+        inline=True
+    )
+
+    embed.add_field(
+        name="🧬 Kreuzung",
+        value=kreuzung or "-",
+        inline=False
+    )
+
+    embed.add_field(
+        name="🔬 Generation",
+        value=generation or "-",
+        inline=True
+    )
+
+    embed.add_field(
+        name="🌰 Samenanzahl",
+        value=str(samenanzahl) if samenanzahl is not None else "-",
+        inline=True
+    )
+
+    embed.add_field(
+        name="📈 Keimrate",
+        value=keimrate or "-",
+        inline=True
+    )
+
+    embed.add_field(
+        name="🌱 Phänotypen",
+        value=phaenotypen or "-",
+        inline=False
+    )
+
+    embed.add_field(
+        name="🏆 Selektion",
+        value=selektion or "-",
+        inline=False
+    )
+
+    embed.add_field(
+        name="📝 Besonderheiten",
+        value=besonderheiten or "-",
+        inline=False
+    )
+
+    embed.add_field(
+        name="👤 Breeder",
+        value=interaction.user.mention,
+        inline=True
+    )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
