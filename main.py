@@ -1684,6 +1684,42 @@ def lade_breeder_projekte(grower_id):
 
     return projekte
 
+def speichere_breeder_stammbaum(
+    projekt_id,
+    grower_id,
+    mutter_projekt_id=None,
+    vater_projekt_id=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO breeder_lineage (
+            projekt_id,
+            mutter_projekt_id,
+            vater_projekt_id,
+            grower_id,
+            erstellt_am
+        )
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (projekt_id)
+        DO UPDATE SET
+            mutter_projekt_id = EXCLUDED.mutter_projekt_id,
+            vater_projekt_id = EXCLUDED.vater_projekt_id,
+            grower_id = EXCLUDED.grower_id
+    """, (
+        projekt_id,
+        mutter_projekt_id,
+        vater_projekt_id,
+        grower_id,
+        datetime.now().isoformat()
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return True
+
 def speichere_eintrag(
     discord_thread_id,
     grower_id,
