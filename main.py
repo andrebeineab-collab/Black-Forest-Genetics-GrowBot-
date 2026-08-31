@@ -3194,8 +3194,23 @@ async def kreuzung_erstellen(
         text="Black Forest Genetics • Breeder Database"
     )
 
+    kreuzungen_channel = interaction.guild.get_channel(
+    1533496259619328220
+    )
+
+    if kreuzungen_channel is None:
+        await interaction.followup.send(
+            "❌ Der Kanal #kreuzungen wurde nicht gefunden.",
+            ephemeral=True
+    )
+    return
+
+    await kreuzungen_channel.send(
+        embed=embed
+    )
+
     await interaction.followup.send(
-        embed=embed,
+        f"✅ Kreuzung #{kreuzung_id} wurde in {kreuzungen_channel.mention} veröffentlicht.",
         ephemeral=True
     )
 
