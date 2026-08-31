@@ -1803,6 +1803,60 @@ def lade_breeder_stammbaum_mehrstufig(
         )
         return daten
 
+def formatiere_breeder_stammbaum(knoten):
+    if knoten is None:
+        return "Keine Stammbaum-Daten vorhanden."
+
+    zeilen = [
+        f"🧬 Nachkomme: **#{knoten['id']} • {knoten['name']}**"
+    ]
+
+    def fuege_eltern_hinzu(
+        aktueller_knoten,
+        prefix=""
+    ):
+        kinder = []
+
+        if aktueller_knoten.get("mutter") is not None:
+            kinder.append(
+                (
+                    "🌱 Mutter",
+                    aktueller_knoten["mutter"]
+                )
+            )
+
+        if aktueller_knoten.get("vater") is not None:
+            kinder.append(
+                (
+                    "🌿 Vater",
+                    aktueller_knoten["vater"]
+                )
+            )
+
+        for index, (rolle, kind) in enumerate(kinder):
+            ist_letztes = index == len(kinder) - 1
+
+            verbindung = "└─" if ist_letztes else "├─"
+
+            zeilen.append(
+                f"{prefix}{verbindung} {rolle}: "
+                f"**#{kind['id']} • {kind['name']}**"
+            )
+
+            neuer_prefix = (
+                prefix + "   "
+                if ist_letztes
+                else prefix + "│  "
+            )
+
+            fuege_eltern_hinzu(
+                kind,
+                neuer_prefix
+            )
+
+    fuege_eltern_hinzu(knoten)
+    return "\n".join(zeilen)
+
 def speichere_eintrag(
     discord_thread_id,
     grower_id,
