@@ -2950,63 +2950,38 @@ async def stammbaum_anzeigen(
             ephemeral=True
         )
         return
-    stammbaum = lade_breeder_stammbaum(
+        
+    stammbaum_daten = lade_breeder_stammbaum_mehrstufig(
         projekt_id,
-        interaction.user.id
+        interaction.user.id,
+        max_tiefe=3
     )
 
-    if stammbaum is None:
+    if stammbaum_daten is None:
+        await interaction.response.send_message(
+            "❌ Stammbaum konnte nicht geladen werden.",
+            ephemeral=True
+        )
+        return
+
+    if (
+        stammbaum_daten["mutter"] is None
+        and stammbaum_daten["vater"] is None
+    ):
         await interaction.response.send_message(
             "❌ Für dieses Breeder-Projekt wurde noch kein Stammbaum gespeichert.",
             ephemeral=True
         )
         return
-
-    mutter_projekt_id, vater_projekt_id = stammbaum
+        stammbaum_text = formatiere_breeder_stammbaum(
+        stammbaum_daten
+    )
 
     projektname = projekt[1]
 
-    mutter_text = "Nicht gesetzt"
-    vater_text = "Nicht gesetzt"
-
-    if mutter_projekt_id is not None:
-        mutter = lade_breeder_projekt(
-            mutter_projekt_id,
-            interaction.user.id
-        )
-
-        if mutter is not None:
-            mutter_text = f"**#{mutter[0]} • {mutter[1]}**"
-    if vater_projekt_id is not None:
-        vater = lade_breeder_projekt(
-            vater_projekt_id,
-            interaction.user.id
-        )
-
-        if vater is not None:
-            vater_text = f"**#{vater[0]} • {vater[1]}**"
-
     embed = discord.Embed(
         title=f"🧬 Stammbaum – {projektname}",
-        description=f"Breeder-Projekt **#{projekt_id}**"
-    )
-
-    embed.add_field(
-        name="🌱 Mutterlinie",
-        value=mutter_text,
-        inline=False
-    )
-
-    embed.add_field(
-        name="🧬 Nachkomme",
-        value=f"**#{projekt_id} • {projektname}**",
-        inline=False
-    )
-
-    embed.add_field(
-        name="🌿 Vaterlinie",
-        value=vater_text,
-        inline=False
+        description=stammbaum_text
     )
 
     embed.set_footer(
