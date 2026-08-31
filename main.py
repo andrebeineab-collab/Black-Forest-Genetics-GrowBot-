@@ -131,6 +131,24 @@ def init_db():
             UNIQUE (projekt_id)
         )
     """)
+
+    # Breeder-Kreuzungen
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS breeder_crosses (
+            id BIGSERIAL PRIMARY KEY,
+            projekt_id BIGINT NOT NULL,
+            grower_id BIGINT NOT NULL,
+            datum TEXT,
+            mutter TEXT,
+            vater TEXT,
+            kreuzung TEXT,
+            methode TEXT,
+            ziel TEXT,
+            status TEXT,
+            notizen TEXT,
+            erstellt_am TEXT
+        )
+    """)
     
     # Pflanzenprofil erweitern
     cursor.execute("""
