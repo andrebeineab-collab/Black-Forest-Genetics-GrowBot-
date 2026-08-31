@@ -1760,6 +1760,58 @@ def lade_breeder_stammbaum(projekt_id, grower_id):
 
     return stammbaum
 
+def speichere_breeder_kreuzung(
+    projekt_id,
+    grower_id,
+    datum,
+    mutter,
+    vater,
+    kreuzung,
+    methode,
+    ziel,
+    status,
+    notizen
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO breeder_crosses (
+            projekt_id,
+            grower_id,
+            datum,
+            mutter,
+            vater,
+            kreuzung,
+            methode,
+            ziel,
+            status,
+            notizen,
+            erstellt_am
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING id
+    """, (
+        projekt_id,
+        grower_id,
+        datum,
+        mutter,
+        vater,
+        kreuzung,
+        methode,
+        ziel,
+        status,
+        notizen,
+        datetime.now().isoformat()
+    ))
+
+    kreuzung_id = cursor.fetchone()[0]
+
+    connection.commit()
+    connection.close()
+
+    return kreuzung_id
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
