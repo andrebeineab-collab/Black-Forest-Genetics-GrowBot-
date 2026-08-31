@@ -3079,6 +3079,127 @@ async def stammbaum_anzeigen(
     )
 
 @bot.tree.command(
+    name="kreuzung-erstellen",
+    description="Dokumentiert eine Kreuzung für ein Breeder-Projekt."
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    mutter="Mutterpflanze oder Mutterlinie",
+    vater="Vaterpflanze oder Vaterlinie",
+    kreuzung="Bezeichnung der Kreuzung",
+    datum="Datum der Kreuzung",
+    methode="Verwendete Kreuzungs-/Bestäubungsmethode",
+    ziel="Ziel der Kreuzung",
+    status="Aktueller Status",
+    notizen="Zusätzliche Notizen"
+)
+async def kreuzung_erstellen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    mutter: str,
+    vater: str,
+    kreuzung: str,
+    datum: str = None,
+    methode: str = None,
+    ziel: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Das Breeder-Projekt wurde nicht gefunden oder gehört dir nicht.",
+            ephemeral=True
+        )
+        return
+
+    kreuzung_id = speichere_breeder_kreuzung(
+        projekt_id,
+        interaction.user.id,
+        datum,
+        mutter,
+        vater,
+        kreuzung,
+        methode,
+        ziel,
+        status,
+        notizen
+    )
+
+    embed = discord.Embed(
+        title=f"🧬 Kreuzung #{kreuzung_id}",
+        description=f"Breeder-Projekt **#{projekt_id} • {projekt[1]}**"
+    )
+
+    embed.add_field(
+        name="🌱 Mutter",
+        value=mutter,
+        inline=False
+    )
+
+    embed.add_field(
+        name="🌿 Vater",
+        value=vater,
+        inline=False
+    )
+
+    embed.add_field(
+        name="🧬 Kreuzung",
+        value=kreuzung,
+        inline=False
+    )
+
+    if datum:
+        embed.add_field(
+            name="📅 Datum",
+            value=datum,
+            inline=False
+        )
+
+    if methode:
+        embed.add_field(
+            name="🔬 Methode",
+            value=methode,
+            inline=False
+        )
+
+    if ziel:
+        embed.add_field(
+            name="🎯 Ziel",
+            value=ziel,
+            inline=False
+        )
+
+    if status:
+        embed.add_field(
+            name="📊 Status",
+            value=status,
+            inline=False
+        )
+
+    if notizen:
+        embed.add_field(
+            name="📝 Notizen",
+            value=notizen,
+            inline=False
+        )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    await interaction.followup.send(
+        embed=embed,
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
