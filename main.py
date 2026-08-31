@@ -2973,8 +2973,8 @@ async def stammbaum_anzeigen(
             ephemeral=True
         )
         return
-        stammbaum_text = formatiere_breeder_stammbaum(
-        stammbaum_daten
+    stammbaum_text = formatiere_breeder_stammbaum(
+    stammbaum_daten
     )
 
     projektname = projekt[1]
