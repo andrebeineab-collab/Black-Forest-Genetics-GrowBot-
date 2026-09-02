@@ -3126,7 +3126,7 @@ async def kreuzung_erstellen(
         )
         return
 
-        print("KREUZUNG D: vor Datenbank speichern", flush=True)
+    print("KREUZUNG D: vor Datenbank speichern", flush=True)
 
     kreuzung_id = speichere_breeder_kreuzung(
         projekt_id,
@@ -3141,6 +3141,8 @@ async def kreuzung_erstellen(
         notizen
     )
 
+    print(f"KREUZUNG E: gespeichert, ID={kreuzung_id}", flush=True)
+    
     embed = discord.Embed(
         title=f"🧬 Kreuzung #{kreuzung_id}",
         description=f"Breeder-Projekt **#{projekt_id} • {projekt[1]}**"
