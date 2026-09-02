@@ -3222,14 +3222,23 @@ async def kreuzung_erstellen(
     )
     return
 
+    print("KREUZUNG I: vor Channel send", flush=True)
+    
+    
     await kreuzungen_channel.send(
         embed=embed
     )
+
+    print("KREUZUNG J: Channel send fertig", flush=True)
+
+    print("KREUZUNG K: vor Followup", flush=True)
 
     await interaction.followup.send(
         f"✅ Kreuzung #{kreuzung_id} wurde in {kreuzungen_channel.mention} veröffentlicht.",
         ephemeral=True
     )
+
+    print("KREUZUNG L: komplett fertig", flush=True)
 
 @bot.tree.command(
     name="profil-bearbeiten",
