@@ -3219,8 +3219,8 @@ async def kreuzung_erstellen(
         await interaction.followup.send(
             "❌ Der Kanal #kreuzungen wurde nicht gefunden.",
             ephemeral=True
-    )
-    return
+        )
+        return
 
     print("KREUZUNG I: vor Channel send", flush=True)
     
