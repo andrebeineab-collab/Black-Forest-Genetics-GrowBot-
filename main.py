@@ -3201,14 +3201,20 @@ async def kreuzung_erstellen(
             inline=False
         )
 
+    print("KREUZUNG F: Embed fertig", flush=True)
+    
     embed.set_footer(
         text="Black Forest Genetics • Breeder Database"
     )
 
+    print("KREUZUNG G: vor Kanal suchen", flush=True)
+    
     kreuzungen_channel = interaction.guild.get_channel(
     1533496259619328220
     )
 
+    print(f"KREUZUNG H: Kanal gefunden = {kreuzungen_channel}", flush=True)
+    
     if kreuzungen_channel is None:
         await interaction.followup.send(
             "❌ Der Kanal #kreuzungen wurde nicht gefunden.",
