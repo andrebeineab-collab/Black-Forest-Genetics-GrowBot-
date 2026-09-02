@@ -3105,12 +3105,19 @@ async def kreuzung_erstellen(
     status: str = None,
     notizen: str = None
 ):
+
+    print("KREUZUNG A: Command gestartet", flush=True)
+    
     await interaction.response.defer(ephemeral=True)
 
+    print("KREUZUNG B: defer fertig", flush=True)
+    
     projekt = lade_breeder_projekt(
         projekt_id,
         interaction.user.id
     )
+
+    print(f"KREUZUNG C: Projekt geladen = {projekt is not None}", flush=True)
 
     if projekt is None:
         await interaction.followup.send(
@@ -3118,6 +3125,8 @@ async def kreuzung_erstellen(
             ephemeral=True
         )
         return
+
+        print("KREUZUNG D: vor Datenbank speichern", flush=True)
 
     kreuzung_id = speichere_breeder_kreuzung(
         projekt_id,
