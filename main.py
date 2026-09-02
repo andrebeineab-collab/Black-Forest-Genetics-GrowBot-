@@ -3105,19 +3105,13 @@ async def kreuzung_erstellen(
     status: str = None,
     notizen: str = None
 ):
-
-    print("KREUZUNG A: Command gestartet", flush=True)
-    
+ 
     await interaction.response.defer(ephemeral=True)
 
-    print("KREUZUNG B: defer fertig", flush=True)
-    
     projekt = lade_breeder_projekt(
         projekt_id,
         interaction.user.id
     )
-
-    print(f"KREUZUNG C: Projekt geladen = {projekt is not None}", flush=True)
 
     if projekt is None:
         await interaction.followup.send(
@@ -3125,9 +3119,7 @@ async def kreuzung_erstellen(
             ephemeral=True
         )
         return
-
-    print("KREUZUNG D: vor Datenbank speichern", flush=True)
-
+        
     kreuzung_id = speichere_breeder_kreuzung(
         projekt_id,
         interaction.user.id,
@@ -3141,8 +3133,6 @@ async def kreuzung_erstellen(
         notizen
     )
 
-    print(f"KREUZUNG E: gespeichert, ID={kreuzung_id}", flush=True)
-    
     embed = discord.Embed(
         title=f"🧬 Kreuzung #{kreuzung_id}",
         description=f"Breeder-Projekt **#{projekt_id} • {projekt[1]}**"
@@ -3200,21 +3190,15 @@ async def kreuzung_erstellen(
             value=notizen,
             inline=False
         )
-
-    print("KREUZUNG F: Embed fertig", flush=True)
-    
+  
     embed.set_footer(
         text="Black Forest Genetics • Breeder Database"
     )
 
-    print("KREUZUNG G: vor Kanal suchen", flush=True)
-    
     kreuzungen_channel = interaction.guild.get_channel(
     1533496259619328220
     )
 
-    print(f"KREUZUNG H: Kanal gefunden = {kreuzungen_channel}", flush=True)
-    
     if kreuzungen_channel is None:
         await interaction.followup.send(
             "❌ Der Kanal #kreuzungen wurde nicht gefunden.",
@@ -3222,23 +3206,14 @@ async def kreuzung_erstellen(
         )
         return
 
-    print("KREUZUNG I: vor Channel send", flush=True)
-    
-    
     await kreuzungen_channel.send(
         embed=embed
     )
-
-    print("KREUZUNG J: Channel send fertig", flush=True)
-
-    print("KREUZUNG K: vor Followup", flush=True)
 
     await interaction.followup.send(
         f"✅ Kreuzung #{kreuzung_id} wurde in {kreuzungen_channel.mention} veröffentlicht.",
         ephemeral=True
     )
-
-    print("KREUZUNG L: komplett fertig", flush=True)
 
 @bot.tree.command(
     name="profil-bearbeiten",
