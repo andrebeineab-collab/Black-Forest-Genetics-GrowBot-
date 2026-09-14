@@ -254,6 +254,10 @@ async def grow_erstellen(
     interaction: discord.Interaction,
     name: str,
     sorte: str,
+    genetik_typ: str,
+    anbaumethode: str,
+    lichtzyklus: str,
+    status: str,
     breeder: str = "—",
     keimdatum: str = "—",
     phase: app_commands.Choice[str] = None,
@@ -367,7 +371,11 @@ async def pflanze_info(interaction: discord.Interaction):
         medium,
         topfgroesse,
         lampe,
-        grower_id
+        grower_id,
+        genetik_typ,
+        anbaumethode,
+        lichtzyklus,
+        status
     ) = pflanze
 
     lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
@@ -382,6 +390,10 @@ async def pflanze_info(interaction: discord.Interaction):
     await interaction.response.send_message(
         f"## 🌱 Pflanzenprofil: {name}\n"
         f"🧬 **Sorte:** {sorte}\n"
+        f"🧬 **Genetik-Typ:** {genetik_typ}\n"
+        f"🌱 **Anbaumethode:** {anbaumethode}\n"
+        f"💡 **Lichtzyklus:** {lichtzyklus}\n"
+        f"📌 **Status:** {status}\n"
         f"🏷️ **Breeder:** {breeder}\n"
         f"📅 **Keimdatum:** {keimdatum}\n"
         f"{alter_text}"
