@@ -304,7 +304,11 @@ async def grow_erstellen(
         medium,
         topfgroesse,
         lampe,
-        interaction.user.id
+        interaction.user.id,
+        genetik_typ,
+        anbaumethode,
+        lichtzyklus,
+        status
     )
     
     await thread.send(
