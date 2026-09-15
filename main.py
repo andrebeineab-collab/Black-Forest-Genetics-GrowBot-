@@ -283,7 +283,37 @@ async def status(interaction: discord.Interaction):
         app_commands.Choice(name="Pausiert", value="Pausiert"),
         app_commands.Choice(name="Beendet", value="Beendet"),
         app_commands.Choice(name="Archiviert", value="Archiviert"),
-    ]
+    ],
+    topfgroesse=[
+    app_commands.Choice(name="0,5 L (≈ 0.13 US gal)", value="0,5 L / 0.13 US gal"),
+    app_commands.Choice(name="0,8 L (≈ 0.21 US gal)", value="0,8 L / 0.21 US gal"),
+    app_commands.Choice(name="1 L (≈ 0.26 US gal)", value="1 L / 0.26 US gal"),
+    app_commands.Choice(name="2 L (≈ 0.53 US gal)", value="2 L / 0.53 US gal"),
+    app_commands.Choice(name="3 L (≈ 0.79 US gal)", value="3 L / 0.79 US gal"),
+    app_commands.Choice(name="5 L (≈ 1.32 US gal)", value="5 L / 1.32 US gal"),
+    app_commands.Choice(name="7 L (≈ 1.85 US gal)", value="7 L / 1.85 US gal"),
+    app_commands.Choice(name="9 L (≈ 2.38 US gal)", value="9 L / 2.38 US gal"),
+    app_commands.Choice(name="11 L (≈ 2.91 US gal)", value="11 L / 2.91 US gal"),
+    app_commands.Choice(name="15 L (≈ 3.96 US gal)", value="15 L / 3.96 US gal"),
+    app_commands.Choice(name="20 L (≈ 5.28 US gal)", value="20 L / 5.28 US gal"),
+    app_commands.Choice(name="25 L (≈ 6.60 US gal)", value="25 L / 6.60 US gal"),
+    app_commands.Choice(name="30 L (≈ 7.93 US gal)", value="30 L / 7.93 US gal"),
+    app_commands.Choice(name="50 L (≈ 13.21 US gal)", value="50 L / 13.21 US gal"),
+    ],
+    lampe=[
+    app_commands.Choice(name="50 W", value="50 W"),
+    app_commands.Choice(name="100 W", value="100 W"),
+    app_commands.Choice(name="150 W", value="150 W"),
+    app_commands.Choice(name="200 W", value="200 W"),
+    app_commands.Choice(name="240 W", value="240 W"),
+    app_commands.Choice(name="300 W", value="300 W"),
+    app_commands.Choice(name="320 W", value="320 W"),
+    app_commands.Choice(name="400 W", value="400 W"),
+    app_commands.Choice(name="480 W", value="480 W"),
+    app_commands.Choice(name="600 W", value="600 W"),
+    app_commands.Choice(name="720 W", value="720 W"),
+    app_commands.Choice(name="1000 W", value="1000 W"),
+    ],
     )
 async def grow_erstellen(
     interaction: discord.Interaction,
@@ -297,11 +327,13 @@ async def grow_erstellen(
     keimdatum: str = "—",
     phase: app_commands.Choice[str] = None,
     medium: app_commands.Choice[str] = None,
-    topfgroesse: str = "—",
-    lampe: str = "—"
-):
+    topfgroesse: app_commands.Choice[str] = None,
+    lampe: app_commands.Choice[str] = None
+    ):
     phase_text = phase.value if phase else "Wachstum"  
     medium = medium.value if medium else "_"
+    topfgroesse = topfgroesse.value if topfgroesse else "_"
+    lampe = lampe.value if lampe else "_"
     genetik_typ = genetik_typ.value
     anbaumethode = anbaumethode.value
     lichtzyklus = lichtzyklus.value
