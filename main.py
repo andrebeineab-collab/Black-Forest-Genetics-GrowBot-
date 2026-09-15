@@ -350,7 +350,7 @@ async def grow_erstellen(
         ephemeral=True
     )
     lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
-    pflanzen_id = interaction.channel.id
+    pflanzen_id = "WIRD_VERGEBEN"
     startnachricht = await interaction.channel.send(
         f"## 🌱 Pflanzenprofil: {name}\n"
         f"🆔 **Pflanzen-ID:** `{pflanzen_id}`\n"
@@ -373,7 +373,7 @@ async def grow_erstellen(
         name=f"🌱 {name} – Growlog",
         auto_archive_duration=1440
     )
-    speichere_pflanze(
+    pflanzen_db_id = speichere_pflanze(
         interaction.channel.id,
         thread.id,
         name,
@@ -389,6 +389,15 @@ async def grow_erstellen(
         anbaumethode,
         lichtzyklus,
         status
+    )
+
+    pflanzen_id = f"BFG-P{pflanzen_db_id:04d}"
+
+    await startnachricht.edit(
+    content=startnachricht.content.replace(
+        "WIRD_VERGEBEN",
+        pflanzen_id
+    )
     )
     
     await thread.send(
@@ -1546,6 +1555,7 @@ def speichere_pflanze(
             erstellt_am
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING id
     """, (
         discord_channel_id,
         discord_thread_id,
@@ -1564,9 +1574,13 @@ def speichere_pflanze(
         status,
         datetime.now().isoformat()
     ))
+    
+    pflanzen_db_id = cursor.fetchone()[0]
 
     connection.commit()
     connection.close()
+
+    return pflanzen_db_id
 
 def erstelle_breeder_projekt(
     discord_channel_id,
