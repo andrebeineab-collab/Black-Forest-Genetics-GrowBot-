@@ -248,16 +248,41 @@ async def status(interaction: discord.Interaction):
         app_commands.Choice(name="🌾 Trocknung", value="Trocknung"),
         app_commands.Choice(name="🫙 Curing", value="Curing"),
         app_commands.Choice(name="🧬 Klon", value="Klon"),
+    ],
+    genetik_typ=[
+        app_commands.Choice(name="Indica", value="Indica"),
+        app_commands.Choice(name="Sativa", value="Sativa"),
+        app_commands.Choice(name="Hybrid", value="Hybrid"),
+        app_commands.Choice(name="Ruderalis", value="Ruderalis"),
+    ],
+    anbaumethode=[
+        app_commands.Choice(name="Erde", value="Erde"),
+        app_commands.Choice(name="Coco", value="Coco"),
+        app_commands.Choice(name="Hydro", value="Hydro"),
+        app_commands.Choice(name="DWC", value="DWC"),
+        app_commands.Choice(name="Aeroponik", value="Aeroponik"),
+    ],
+    lichtzyklus=[
+        app_commands.Choice(name="18/6", value="18/6"),
+        app_commands.Choice(name="20/4", value="20/4"),
+        app_commands.Choice(name="24/0", value="24/0"),
+        app_commands.Choice(name="12/12", value="12/12"),
+    ],
+    status=[
+        app_commands.Choice(name="Aktiv", value="Aktiv"),
+        app_commands.Choice(name="Pausiert", value="Pausiert"),
+        app_commands.Choice(name="Beendet", value="Beendet"),
+        app_commands.Choice(name="Archiviert", value="Archiviert"),
     ]
-)
+    )
 async def grow_erstellen(
     interaction: discord.Interaction,
     name: str,
     sorte: str,
-    genetik_typ: str,
-    anbaumethode: str,
-    lichtzyklus: str,
-    status: str,
+    genetik_typ: app_commands.Choice[str],
+    anbaumethode: app_commands.Choice[str],
+    lichtzyklus: app_commands.Choice[str],
+    status: app_commands.Choice[str],
     breeder: str = "—",
     keimdatum: str = "—",
     phase: app_commands.Choice[str] = None,
@@ -266,6 +291,10 @@ async def grow_erstellen(
     lampe: str = "—"
 ):
     phase_text = phase.value if phase else "Wachstum"  
+    genetik_typ = genetik_typ.value
+    anbaumethode = anbaumethode.value
+    lichtzyklus = lichtzyklus.value
+    status = status.value
     if not isinstance(interaction.channel, discord.TextChannel):
         await interaction.response.send_message(
             "❌ Dieser Befehl funktioniert nur in einem Textkanal.",
