@@ -265,6 +265,13 @@ async def status(interaction: discord.Interaction):
         app_commands.Choice(name="Mainlining", value="Mainlining"),
         app_commands.Choice(name="Kombiniert", value="Kombiniert"),
     ],
+    medium=[
+    app_commands.Choice(name="Erde", value="Erde"),
+    app_commands.Choice(name="Coco", value="Coco"),
+    app_commands.Choice(name="Hydro", value="Hydro"),
+    app_commands.Choice(name="DWC", value="DWC"),
+    app_commands.Choice(name="Aeroponik", value="Aeroponik"),
+    ],
     lichtzyklus=[
         app_commands.Choice(name="18/6", value="18/6"),
         app_commands.Choice(name="20/4", value="20/4"),
@@ -289,11 +296,12 @@ async def grow_erstellen(
     breeder: str = "—",
     keimdatum: str = "—",
     phase: app_commands.Choice[str] = None,
-    medium: str = "—",
+    medium: app_commands.Choice[str] = None,
     topfgroesse: str = "—",
     lampe: str = "—"
 ):
     phase_text = phase.value if phase else "Wachstum"  
+    medium = medium.value if medium else "_"
     genetik_typ = genetik_typ.value
     anbaumethode = anbaumethode.value
     lichtzyklus = lichtzyklus.value
