@@ -1933,6 +1933,26 @@ def speichere_breeder_kreuzung(
 
     return kreuzung_id
 
+def zaehle_breeder_kreuzungen(projekt_id, grower_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM breeder_crosses
+        WHERE projekt_id = %s
+          AND grower_id = %s
+    """, (
+        projekt_id,
+        grower_id
+    ))
+
+    anzahl = cursor.fetchone()[0]
+
+    connection.close()
+
+    return anzahl
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -3254,8 +3274,13 @@ async def kreuzung_erstellen(
         notizen
     )
 
+    kreuzung_nummer = zaehle_breeder_kreuzungen(
+        projekt_id,
+        interaction.user.id
+    )
+
     embed = discord.Embed(
-        title=f"🧬 Kreuzung #{kreuzung_id}",
+        title=f"🧬 Kreuzung #{kreuzung_nummer}",
         description=f"Breeder-Projekt **#{projekt_id} • {projekt[1]}**"
     )
 
