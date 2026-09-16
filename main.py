@@ -452,6 +452,7 @@ async def pflanze_info(interaction: discord.Interaction):
         return
 
     (
+        pflanzen_db_id,
         name,
         sorte,
         breeder,
@@ -476,8 +477,11 @@ async def pflanze_info(interaction: discord.Interaction):
         else "🌱 **Pflanzenalter:** —\n"
     )
 
+    pflanzen_id = f"BFG-P{pflanzen_db_id:04d}"
+
     await interaction.response.send_message(
         f"## 🌱 Pflanzenprofil: {name}\n"
+        f"🆔 **Pflanzen-ID:** `{pflanzen_id}`\n"
         f"🧬 **Sorte:** {sorte}\n"
         f"🧬 **Genetik-Typ:** {genetik_typ}\n"
         f"🌱 **Anbaumethode:** {anbaumethode}\n"
@@ -1649,6 +1653,7 @@ def lade_pflanze(thread_id):
 
     cursor.execute("""
         SELECT
+    id,
     name,
     sorte,
     breeder,
