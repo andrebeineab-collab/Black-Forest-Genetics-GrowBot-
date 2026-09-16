@@ -149,6 +149,24 @@ def init_db():
             erstellt_am TEXT
         )
     """)
+
+    # Breeder-Generationen
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS breeder_generations (
+            id BIGSERIAL PRIMARY KEY,
+            projekt_id BIGINT NOT NULL,
+            grower_id BIGINT NOT NULL,
+            generation TEXT NOT NULL,
+            samenanzahl INTEGER,
+            keimrate NUMERIC(5,2),
+            phaenotypen TEXT,
+            selektion TEXT,
+            status TEXT,
+            notizen TEXT,
+            erstellt_am TEXT,
+            UNIQUE (projekt_id, grower_id, generation)
+        )
+    """)
     
     # Pflanzenprofil erweitern
     cursor.execute("""
@@ -2099,6 +2117,55 @@ def loesche_breeder_kreuzung(
 
     return geloescht
 
+def speichere_breeder_generation(
+    projekt_id,
+    grower_id,
+    generation,
+    samenanzahl=None,
+    keimrate=None,
+    phaenotypen=None,
+    selektion=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO breeder_generations (
+            projekt_id,
+            grower_id,
+            generation,
+            samenanzahl,
+            keimrate,
+            phaenotypen,
+            selektion,
+            status,
+            notizen,
+            erstellt_am
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING id
+    """, (
+        projekt_id,
+        grower_id,
+        generation,
+        samenanzahl,
+        keimrate,
+        phaenotypen,
+        selektion,
+        status,
+        notizen,
+        datetime.now().isoformat()
+    ))
+
+    generation_id = cursor.fetchone()[0]
+
+    connection.commit()
+    connection.close()
+
+    return generation_id
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -3766,6 +3833,76 @@ async def kreuzung_loeschen(
     await interaction.followup.send(
         f"✅ Kreuzung #{kreuzung_nummer} – **{kreuzung_name}** "
         f"wurde aus Breeder-Projekt #{projekt_id} gelöscht.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="generation-erstellen",
+    description="Erstellt eine Generation für ein Breeder-Projekt"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    generation="Generation, z. B. F1, F2, S1 oder S2",
+    samenanzahl="Anzahl der Samen",
+    keimrate="Keimrate in Prozent",
+    phaenotypen="Beobachtete Phänotypen",
+    selektion="Auswahl oder Selektionsmerkmale",
+    status="Aktueller Status",
+    notizen="Zusätzliche Notizen"
+)
+async def generation_erstellen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    generation: str,
+    samenanzahl: int = None,
+    keimrate: float = None,
+    phaenotypen: str = None,
+    selektion: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    if samenanzahl is not None and samenanzahl < 0:
+        await interaction.followup.send(
+            "❌ Die Samenanzahl darf nicht negativ sein.",
+            ephemeral=True
+        )
+        return
+    if keimrate is not None and not 0 <= keimrate <= 100:
+        await interaction.followup.send(
+            "❌ Die Keimrate muss zwischen 0 und 100 liegen.",
+            ephemeral=True
+        )
+        return
+
+    generation_id = speichere_breeder_generation(
+        projekt_id,
+        interaction.user.id,
+        generation,
+        samenanzahl,
+        keimrate,
+        phaenotypen,
+        selektion,
+        status,
+        notizen
+    )
+
+    await interaction.followup.send(
+        f"✅ Generation **{generation}** wurde für "
+        f"Breeder-Projekt #{projekt_id} erstellt.",
         ephemeral=True
     )
 
