@@ -575,9 +575,7 @@ async def eintrag(
 
     if pflanze:
         pflanzen_db_id = pflanze[0]
-
-            if keimdatum in ("_", "—", "", None):
-                keimdatum = pflanze[1]
+        keimdatum = pflanze[1] if keimdatum in ("_", "—", "", None) else keimdatum
 
     lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
 
