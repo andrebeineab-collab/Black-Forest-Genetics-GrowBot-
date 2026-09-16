@@ -1983,6 +1983,96 @@ def lade_breeder_kreuzungen(projekt_id, grower_id):
 
     return kreuzungen
 
+def lade_breeder_kreuzung_nach_nummer(
+    projekt_id,
+    grower_id,
+    kreuzung_nummer
+):
+    if kreuzung_nummer < 1:
+        return None
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            datum,
+            mutter,
+            vater,
+            kreuzung,
+            methode,
+            ziel,
+            status,
+            notizen
+        FROM breeder_crosses
+        WHERE projekt_id = %s
+          AND grower_id = %s
+        ORDER BY id ASC
+        LIMIT 1 OFFSET %s
+    """, (
+        projekt_id,
+        grower_id,
+        kreuzung_nummer - 1
+    ))
+
+    eintrag = cursor.fetchone()
+
+    connection.close()
+
+    return eintrag
+
+def aktualisiere_breeder_kreuzung(
+    kreuzung_id,
+    projekt_id,
+    grower_id,
+    datum=None,
+    mutter=None,
+    vater=None,
+    kreuzung=None,
+    methode=None,
+    ziel=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        UPDATE breeder_crosses
+        SET
+            datum = COALESCE(%s, datum),
+            mutter = COALESCE(%s, mutter),
+            vater = COALESCE(%s, vater),
+            kreuzung = COALESCE(%s, kreuzung),
+            methode = COALESCE(%s, methode),
+            ziel = COALESCE(%s, ziel),
+            status = COALESCE(%s, status),
+            notizen = COALESCE(%s, notizen)
+        WHERE id = %s
+          AND projekt_id = %s
+          AND grower_id = %s
+    """, (
+        datum,
+        mutter,
+        vater,
+        kreuzung,
+        methode,
+        ziel,
+        status,
+        notizen,
+        kreuzung_id,
+        projekt_id,
+        grower_id
+    ))
+
+    aktualisiert = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return aktualisiert
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -3477,6 +3567,109 @@ async def kreuzungen_anzeigen(
 
     await interaction.followup.send(
         embed=embed,
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="kreuzung-bearbeiten",
+    description="Bearbeitet eine Kreuzung eines Breeder-Projekts"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    kreuzung_nummer="Nummer der Kreuzung im Projekt",
+    datum="Neues Datum",
+    mutter="Neue Mutterpflanze oder Mutterlinie",
+    vater="Neue Vaterpflanze oder Vaterlinie",
+    kreuzung="Neue Bezeichnung der Kreuzung",
+    methode="Neue Kreuzungs-/Bestäubungsmethode",
+    ziel="Neues Ziel der Kreuzung",
+    status="Neuer Status",
+    notizen="Neue Notizen"
+)
+async def kreuzung_bearbeiten(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    kreuzung_nummer: int,
+    datum: str = None,
+    mutter: str = None,
+    vater: str = None,
+    kreuzung: str = None,
+    methode: str = None,
+    ziel: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    eintrag = lade_breeder_kreuzung_nach_nummer(
+        projekt_id,
+        interaction.user.id,
+        kreuzung_nummer
+    )
+
+    if eintrag is None:
+        await interaction.followup.send(
+            f"❌ Kreuzung #{kreuzung_nummer} wurde in diesem Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    if all(
+        wert is None
+        for wert in (
+            datum,
+            mutter,
+            vater,
+            kreuzung,
+            methode,
+            ziel,
+            status,
+            notizen
+        )
+    ):
+        await interaction.followup.send(
+            "ℹ️ Du hast keine Änderungen angegeben.",
+            ephemeral=True
+        )
+        return
+
+    kreuzung_id = eintrag[0]
+
+    aktualisiert = aktualisiere_breeder_kreuzung(
+        kreuzung_id,
+        projekt_id,
+        interaction.user.id,
+        datum=datum,
+        mutter=mutter,
+        vater=vater,
+        kreuzung=kreuzung,
+        methode=methode,
+        ziel=ziel,
+        status=status,
+        notizen=notizen
+    )
+
+    if not aktualisiert:
+        await interaction.followup.send(
+            "❌ Die Kreuzung konnte nicht aktualisiert werden.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.followup.send(
+        f"✅ Kreuzung #{kreuzung_nummer} in Breeder-Projekt #{projekt_id} wurde aktualisiert.",
         ephemeral=True
     )
 
