@@ -604,6 +604,7 @@ async def eintrag(
     
     await interaction.followup.send(
         f"## 📋 Neuer Growlog-Eintrag\n"
+        f"🆔 **Pflanzen-ID:** `{pflanzen_id}`\n"
         f"📅 **Zeitpunkt:** <t:{zeitpunkt}:F>\n"
         f"👤 **Grower:** {interaction.user.mention}\n\n"
         f"{alter_text}\n"
