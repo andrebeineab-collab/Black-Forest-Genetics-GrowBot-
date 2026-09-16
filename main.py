@@ -559,21 +559,25 @@ async def eintrag(
         )
         return
     await interaction.response.defer()
-    if keimdatum in ("_", "—", "", None):
-            connection = get_db_connection()
-            cursor = connection.cursor()
-            cursor.execute("""
-                SELECT keimdatum
-                FROM plants
-                WHERE discord_thread_id = %s
-                ORDER BY id DESC
-                LIMIT 1
-            """, (interaction.channel.id,))
-            pflanze = cursor.fetchone()
-            connection.close()
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("""
+        SELECT id, keimdatum
+        FROM plants
+        WHERE discord_thread_id = %s
+        ORDER BY id DESC
+        LIMIT 1
+    """, (interaction.channel.id,))
 
-            if pflanze:
-                keimdatum = pflanze[0]
+    pflanze = cursor.fetchone()
+    connection.close()
+    pflanzen_db_id = None
+
+    if pflanze:
+    pflanzen_db_id = pflanze[0]
+
+        if keimdatum in ("_", "—", "", None):
+            keimdatum = pflanze[1]
 
     lebenstage, lebenswoche = berechne_pflanzenalter(keimdatum)
 
@@ -584,6 +588,9 @@ async def eintrag(
         if lebenstage is not None
         else "⚠️ **Pflanzenalter:** Keimdatum ungültig\n"
     )
+
+    pflanzen_id = f"BFG-P{pflanzen_db_id:04d}" if pflanzen_db_id is not None else "—"
+    
     zeitpunkt = int(interaction.created_at.timestamp())
 
     system = temp_system.value if temp_system else "DE"
