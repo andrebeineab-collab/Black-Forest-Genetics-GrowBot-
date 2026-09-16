@@ -2073,6 +2073,32 @@ def aktualisiere_breeder_kreuzung(
 
     return aktualisiert
 
+def loesche_breeder_kreuzung(
+    kreuzung_id,
+    projekt_id,
+    grower_id
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        DELETE FROM breeder_crosses
+        WHERE id = %s
+          AND projekt_id = %s
+          AND grower_id = %s
+    """, (
+        kreuzung_id,
+        projekt_id,
+        grower_id
+    ))
+
+    geloescht = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return geloescht
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -3670,6 +3696,76 @@ async def kreuzung_bearbeiten(
 
     await interaction.followup.send(
         f"✅ Kreuzung #{kreuzung_nummer} in Breeder-Projekt #{projekt_id} wurde aktualisiert.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="kreuzung-loeschen",
+    description="Löscht eine Kreuzung aus einem Breeder-Projekt"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    kreuzung_nummer="Nummer der Kreuzung im Projekt",
+    bestaetigen="Löschen wirklich bestätigen"
+)
+async def kreuzung_loeschen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    kreuzung_nummer: int,
+    bestaetigen: bool
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    eintrag = lade_breeder_kreuzung_nach_nummer(
+        projekt_id,
+        interaction.user.id,
+        kreuzung_nummer
+    )
+    if eintrag is None:
+        await interaction.followup.send(
+            f"❌ Kreuzung #{kreuzung_nummer} wurde in diesem Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    if not bestaetigen:
+        await interaction.followup.send(
+            f"ℹ️ Löschen von Kreuzung #{kreuzung_nummer} wurde abgebrochen.",
+            ephemeral=True
+        )
+        return
+
+    kreuzung_id = eintrag[0]
+    kreuzung_name = eintrag[4]
+
+    geloescht = loesche_breeder_kreuzung(
+        kreuzung_id,
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not geloescht:
+        await interaction.followup.send(
+            "❌ Die Kreuzung konnte nicht gelöscht werden.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.followup.send(
+        f"✅ Kreuzung #{kreuzung_nummer} – **{kreuzung_name}** "
+        f"wurde aus Breeder-Projekt #{projekt_id} gelöscht.",
         ephemeral=True
     )
 
