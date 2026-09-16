@@ -3415,9 +3415,9 @@ async def kreuzungen_anzeigen(
             ephemeral=True
         )
         return
-        kreuzungen = lade_breeder_kreuzungen(
-        projekt_id,
-        interaction.user.id
+    kreuzungen = lade_breeder_kreuzungen(
+    projekt_id,
+    interaction.user.id
     )
 
     if not kreuzungen:
