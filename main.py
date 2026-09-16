@@ -1953,6 +1953,36 @@ def zaehle_breeder_kreuzungen(projekt_id, grower_id):
 
     return anzahl
 
+def lade_breeder_kreuzungen(projekt_id, grower_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            datum,
+            mutter,
+            vater,
+            kreuzung,
+            methode,
+            ziel,
+            status,
+            notizen
+        FROM breeder_crosses
+        WHERE projekt_id = %s
+          AND grower_id = %s
+        ORDER BY id ASC
+    """, (
+        projekt_id,
+        grower_id
+    ))
+
+    kreuzungen = cursor.fetchall()
+
+    connection.close()
+
+    return kreuzungen
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -3357,7 +3387,96 @@ async def kreuzung_erstellen(
     )
 
     await interaction.followup.send(
-        f"✅ Kreuzung #{kreuzung_id} wurde in {kreuzungen_channel.mention} veröffentlicht.",
+        f"✅ Kreuzung #{kreuzung_nummer} wurde in {kreuzungen_channel.mention} veröffentlicht.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="kreuzungen-anzeigen",
+    description="Zeigt alle Kreuzungen eines Breeder-Projekts"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts"
+)
+async def kreuzungen_anzeigen(
+    interaction: discord.Interaction,
+    projekt_id: int
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+        kreuzungen = lade_breeder_kreuzungen(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not kreuzungen:
+        await interaction.followup.send(
+            "ℹ️ Für dieses Breeder-Projekt sind noch keine Kreuzungen gespeichert.",
+            ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title=f"🧬 Kreuzungen – {projekt[1]}",
+        description=f"Breeder-Projekt **#{projekt_id}**"
+    )
+
+    for nummer, eintrag in enumerate(kreuzungen, start=1):
+        (
+            kreuzung_id,
+            datum,
+            mutter,
+            vater,
+            kreuzung,
+            methode,
+            ziel,
+            status,
+            notizen
+            ) = eintrag
+
+        text = (
+            f"🌱 **Mutter:** {mutter or 'Nicht angegeben'}\n"
+            f"🌿 **Vater:** {vater or 'Nicht angegeben'}\n"
+            f"🧬 **Kreuzung:** {kreuzung or 'Nicht angegeben'}"
+        )
+
+        if datum:
+            text += f"\n📅 **Datum:** {datum}"
+
+        if methode:
+            text += f"\n🔬 **Methode:** {methode}"
+
+        if ziel:
+            text += f"\n🎯 **Ziel:** {ziel}"
+
+        if status:
+            text += f"\n📊 **Status:** {status}"
+
+        if notizen:
+            text += f"\n📝 **Notizen:** {notizen}"
+
+        embed.add_field(
+            name=f"🧬 Kreuzung #{nummer}",
+            value=text,
+            inline=False
+        )
+    embed.set_footer(
+    text="Black Forest Genetics • Breeder Database"
+    )
+
+    await interaction.followup.send(
+        embed=embed,
         ephemeral=True
     )
 
