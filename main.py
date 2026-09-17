@@ -2244,6 +2244,32 @@ def aktualisiere_breeder_generation(
 
     return aktualisiert
 
+def loesche_breeder_generation(
+    projekt_id,
+    grower_id,
+    generation
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        DELETE FROM breeder_generations
+        WHERE projekt_id = %s
+          AND grower_id = %s
+          AND generation = %s
+    """, (
+        projekt_id,
+        grower_id,
+        generation
+    ))
+
+    geloescht = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return geloescht
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -4169,6 +4195,79 @@ async def generation_bearbeiten(
     await interaction.followup.send(
         f"✅ Generation **{generation}** in "
         f"Breeder-Projekt #{projekt_id} wurde aktualisiert.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="generation-loeschen",
+    description="Löscht eine Generation aus einem Breeder-Projekt"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    generation="Generation, z. B. F1, F2, S1 oder S2",
+    bestaetigen="Löschen wirklich bestätigen"
+)
+async def generation_loeschen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    generation: str,
+    bestaetigen: bool
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    generationen = lade_breeder_generationen(
+        projekt_id,
+        interaction.user.id
+    )
+
+    vorhanden = any(
+        eintrag[1] == generation
+        for eintrag in generationen
+    )
+
+    if not vorhanden:
+        await interaction.followup.send(
+            f"❌ Generation **{generation}** wurde in "
+            f"Breeder-Projekt
+            #{projekt_id} nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    if not bestaetigen:
+        await interaction.followup.send(
+            f"ℹ️ Löschen von Generation **{generation}** wurde nicht bestätigt.",
+            ephemeral=True
+        )
+        return
+
+    geloescht = loesche_breeder_generation(
+        projekt_id,
+        interaction.user.id,
+        generation
+    )
+
+    if not geloescht:
+        await interaction.followup.send(
+            "❌ Die Generation konnte nicht gelöscht werden.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.followup.send(
+        f"✅ Generation **{generation}** wurde aus "
+        f"Breeder-Projekt #{projekt_id} gelöscht.",
         ephemeral=True
     )
 
