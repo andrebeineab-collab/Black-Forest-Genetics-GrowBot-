@@ -2166,6 +2166,39 @@ def speichere_breeder_generation(
 
     return generation_id
 
+def lade_breeder_generationen(
+    projekt_id,
+    grower_id
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            generation,
+            samenanzahl,
+            keimrate,
+            phaenotypen,
+            selektion,
+            status,
+            notizen,
+            erstellt_am
+        FROM breeder_generations
+        WHERE projekt_id = %s
+          AND grower_id = %s
+        ORDER BY id ASC
+    """, (
+        projekt_id,
+        grower_id
+    ))
+
+    generationen = cursor.fetchall()
+
+    connection.close()
+
+    return generationen
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -3903,6 +3936,99 @@ async def generation_erstellen(
     await interaction.followup.send(
         f"✅ Generation **{generation}** wurde für "
         f"Breeder-Projekt #{projekt_id} erstellt.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="generationen-anzeigen",
+    description="Zeigt die Generationen eines Breeder-Projekts"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts"
+)
+async def generationen_anzeigen(
+    interaction: discord.Interaction,
+    projekt_id: int
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    generationen = lade_breeder_generationen(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not generationen:
+        await interaction.followup.send(
+            "ℹ️ Für dieses Breeder-Projekt wurden noch keine Generationen angelegt.",
+            ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title=f"🧬 Generationen – {projekt[1]}",
+        description=f"Breeder-Projekt **#{projekt_id}**"
+    )
+
+    for eintrag in generationen:
+        (
+            generation_id,
+            generation,
+            samenanzahl,
+            keimrate,
+            phaenotypen,
+            selektion,
+            status,
+            notizen,
+            erstellt_am
+        ) = eintrag
+
+        text = ""
+
+        if samenanzahl is not None:
+            text += f"🌰 **Samenanzahl:** {samenanzahl}\n"
+
+        if keimrate is not None:
+            text += f"📈 **Keimrate:** {keimrate}%\n"
+
+        if phaenotypen:
+            text += f"🌱 **Phänotypen:** {phaenotypen}\n"
+
+        if selektion:
+            text += f"🏆 **Selektion:** {selektion}\n"
+
+        if status:
+            text += f"📊 **Status:** {status}\n"
+
+        if notizen:
+            text += f"📝 **Notizen:** {notizen}\n"
+
+        if not text:
+            text = "Keine weiteren Angaben."
+
+        embed.add_field(
+            name=f"🧬 Generation {generation}",
+            value=text,
+            inline=False
+        )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    await interaction.followup.send(
+        embed=embed,
         ephemeral=True
     )
 
