@@ -2199,6 +2199,51 @@ def lade_breeder_generationen(
 
     return generationen
 
+def aktualisiere_breeder_generation(
+    projekt_id,
+    grower_id,
+    generation,
+    samenanzahl=None,
+    keimrate=None,
+    phaenotypen=None,
+    selektion=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        UPDATE breeder_generations
+        SET
+            samenanzahl = COALESCE(%s, samenanzahl),
+            keimrate = COALESCE(%s, keimrate),
+            phaenotypen = COALESCE(%s, phaenotypen),
+            selektion = COALESCE(%s, selektion),
+            status =COALESCE(%s, status),
+            notizen = COALESCE(%s, notizen)
+        WHERE projekt_id = %s
+          AND grower_id = %s
+          AND generation = %s
+    """, (
+        samenanzahl,
+        keimrate,
+        phaenotypen,
+        selektion,
+        status,
+        notizen,
+        projekt_id,
+        grower_id,
+        generation
+    ))
+
+    aktualisiert = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return aktualisiert
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -4029,6 +4074,101 @@ async def generationen_anzeigen(
 
     await interaction.followup.send(
         embed=embed,
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="generation-bearbeiten",
+    description="Bearbeitet eine Generation eines Breeder-Projekts"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    generation="Generation, z. B. F1, F2, S1 oder S2",
+    samenanzahl="Neue Samenanzahl",
+    keimrate="Neue Keimrate in Prozent",
+    phaenotypen="Neue Phänotypen",
+    selektion="Neue Selektion",
+    status="Neuer Status",
+    notizen="Neue Notizen"
+)
+async def generation_bearbeiten(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    generation: str,
+    samenanzahl: int = None,
+    keimrate: float = None,
+    phaenotypen: str = None,
+    selektion: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    if all(
+        wert is None
+        for wert in (
+            samenanzahl,
+            keimrate,
+            phaenotypen,
+            selektion,
+            status,
+            notizen
+        )
+    ):
+        await interaction.followup.send(
+            "ℹ️ Du hast keine Änderungen angegeben.",
+            ephemeral=True
+        )
+        return
+
+    if samenanzahl is not None and samenanzahl < 0:
+        await interaction.followup.send(
+            "❌ Die Samenanzahl darf nicht negativ sein.",
+            ephemeral=True
+        )
+        return
+
+    if keimrate is not None and not 0 <= keimrate <= 100:
+        await interaction.followup.send(
+            "❌ Die Keimrate muss zwischen 0 und 100 liegen.",
+            ephemeral=True
+        )
+        return
+    aktualisiert = aktualisiere_breeder_generation(
+        projekt_id,
+        interaction.user.id,
+        generation,
+        samenanzahl,
+        keimrate,
+        phaenotypen,
+        selektion,
+        status,
+        notizen
+    )
+
+    if not aktualisiert:
+        await interaction.followup.send(
+            f"❌ Generation **{generation}** wurde in "
+            f"Breeder-Projekt #{projekt_id} nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.followup.send(
+        f"✅ Generation **{generation}** in "
+        f"Breeder-Projekt #{projekt_id} wurde aktualisiert.",
         ephemeral=True
     )
 
