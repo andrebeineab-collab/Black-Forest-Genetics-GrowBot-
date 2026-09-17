@@ -4239,8 +4239,7 @@ async def generation_loeschen(
     if not vorhanden:
         await interaction.followup.send(
             f"❌ Generation **{generation}** wurde in "
-            f"Breeder-Projekt
-            #{projekt_id} nicht gefunden.",
+            f"Breeder-Projekt #{projekt_id} nicht gefunden.",
             ephemeral=True
         )
         return
