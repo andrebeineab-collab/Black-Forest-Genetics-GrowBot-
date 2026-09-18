@@ -184,6 +184,25 @@ def init_db():
             erstellt_am TEXT
         )
     """)
+
+    # Breeder-Samenproduktion
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS breeder_samenproduktion (
+            id BIGSERIAL PRIMARY KEY,
+            projekt_id BIGINT NOT NULL,
+            grower_id BIGINT NOT NULL,
+            name TEXT NOT NULL,
+            kreuzung TEXT,
+            generation TEXT,
+            erntedatum TEXT,
+            samenanzahl INTEGER,
+            keimrate NUMERIC(5,2),
+            lagerung TEXT,
+            status TEXT,
+            notizen TEXT,
+            erstellt_am TEXT
+        )
+    """)
     
     # Pflanzenprofil erweitern
     cursor.execute("""
@@ -2335,6 +2354,95 @@ def speichere_breeder_pollen(
     connection.close()
 
     return pollen_id
+
+def speichere_breeder_samenproduktion(
+    projekt_id,
+    grower_id,
+    name,
+    kreuzung=None,
+    generation=None,
+    erntedatum=None,
+    samenanzahl=None,
+    keimrate=None,
+    lagerung=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO breeder_samenproduktion (
+            projekt_id,
+            grower_id,
+            name,
+            kreuzung,
+            generation,
+            erntedatum,
+            samenanzahl,
+            keimrate,
+            lagerung,
+            status,
+            notizen,
+            erstellt_am
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING id
+    """, (
+        projekt_id,
+        grower_id,
+        name,
+        kreuzung,
+        generation,
+        erntedatum,
+        samenanzahl,
+        keimrate,
+        lagerung,
+        status,
+        notizen,
+        datetime.now().isoformat()
+    ))
+
+    samenproduktion_id = cursor.fetchone()[0]
+
+    connection.commit()
+    connection.close()
+
+    return samenproduktion_id
+
+def lade_breeder_samenproduktion(
+    projekt_id,
+    grower_id
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            name,
+            kreuzung,
+            generation,
+            erntedatum,
+            samenanzahl,
+            keimrate,
+            lagerung,
+            status,
+            notizen,
+            erstellt_am
+        FROM breeder_samenproduktion
+        WHERE projekt_id = %s
+          AND grower_id = %s
+        ORDER BY id ASC
+    """, (
+        projekt_id,
+        grower_id
+    ))
+    samenproduktionen = cursor.fetchall()
+
+    connection.close()
+
+    return samenproduktionen
 
 def lade_breeder_pollen(
     projekt_id,
@@ -4828,6 +4936,164 @@ async def pollen_loeschen(
     await interaction.followup.send(
         f"✅ Pollen #{pollen_nummer} – **{pollen_name}** "
         f"wurde aus Breeder-Projekt #{projekt_id} gelöscht.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="samenproduktion-erstellen",
+    description="Erstellt einen Eintrag für die Samenproduktion"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    name="Name oder Bezeichnung der Samenproduktion",
+    kreuzung="Zugehörige Kreuzung",
+    generation="Generation, z. B. S1, F1 oder F2",
+    erntedatum="Datum der Samenernte",
+    samenanzahl="Anzahl der Samen",
+    keimrate="Keimrate in Prozent",
+    lagerung="Art oder Ort der Lagerung",
+    status="Aktueller Status",
+    notizen="Zusätzliche Notizen"
+)
+async def samenproduktion_erstellen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    name: str,
+    kreuzung: str = None,
+    generation: str = None,
+    erntedatum: str = None,
+    samenanzahl: int = None,
+    keimrate: float = None,
+    lagerung: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+    if samenanzahl is not None and samenanzahl < 0:
+        await interaction.followup.send(
+            "❌ Die Samenanzahl darf nicht negativ sein.",
+            ephemeral=True
+        )
+        return
+
+    if keimrate is not None and not 0 <= keimrate <= 100:
+        await interaction.followup.send(
+            "❌ Die Keimrate muss zwischen 0 und 100 liegen.",
+            ephemeral=True
+        )
+        return
+
+    samenproduktion_id = speichere_breeder_samenproduktion(
+        projekt_id,
+        interaction.user.id,
+        name,
+        kreuzung,
+        generation,
+        erntedatum,
+        samenanzahl,
+        keimrate,
+        lagerung,
+        status,
+        notizen
+    )
+
+    embed = discord.Embed(
+        title=f"🌰 Samenproduktion – {name}",
+        description=f"Breeder-Projekt **#{projekt_id}** • **{projekt[1]}**"
+    )
+
+    if kreuzung:
+        embed.add_field(
+            name="🧬 Kreuzung",
+            value=kreuzung,
+            inline=False
+        )
+
+    if generation:
+        embed.add_field(
+            name="🔬 Generation",
+            value=generation,
+            inline=False
+        )
+
+    if erntedatum:
+        embed.add_field(
+            name="📅 Erntedatum",
+            value=erntedatum,
+            inline=False
+        )
+
+    if samenanzahl is not None:
+        embed.add_field(
+            name="🌰 Samenanzahl",
+            value=str(samenanzahl),
+            inline=False
+        )
+
+    if keimrate is not None:
+        embed.add_field(
+            name="📈 Keimrate",
+            value=f"{keimrate:.2f}%",
+            inline=False
+        )
+
+    if lagerung:
+        embed.add_field(
+            name="❄️ Lagerung",
+            value=lagerung,
+            inline=False
+        )
+
+    if status:
+        embed.add_field(
+            name="📊 Status",
+            value=status,
+            inline=False
+        )
+
+    if notizen:
+        embed.add_field(
+            name="📝 Notizen",
+            value=notizen,
+            inline=False
+        )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    samenproduktion_channel = discord.utils.get(
+        interaction.guild.text_channels,
+        name="samenproduktion"
+    )
+
+    if samenproduktion_channel is None:
+        await interaction.followup.send(
+            f"⚠️ Samenproduktion **{name}** wurde gespeichert, "
+            "aber der Kanal #samenproduktion wurde nichtgefunden.",
+            ephemeral=True
+        )
+        return
+
+    await samenproduktion_channel.send(
+        embed=embed
+    )
+
+    await interaction.followup.send(
+        f"✅ Samenproduktion **{name}** wurde gespeichert und "
+        "#samenproduktion veröffentlicht.",
         ephemeral=True
     )
 
