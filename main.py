@@ -2336,6 +2336,39 @@ def speichere_breeder_pollen(
 
     return pollen_id
 
+def lade_breeder_pollen(
+    projekt_id,
+    grower_id
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            name,
+            herkunft,
+            sammeldatum,
+            menge,
+            lagerung,
+            status,
+            notizen,
+            erstellt_am
+        FROM breeder_pollen
+        WHERE projekt_id = %s
+          AND grower_id = %s
+        ORDER BY id ASC
+    """, (
+        projekt_id,
+        grower_id
+    ))
+
+    pollen = cursor.fetchall()
+
+    connection.close()
+
+    return pollen
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -4460,6 +4493,97 @@ async def pollen_erstellen(
         "#pollen veröffentlicht.",
         ephemeral=True
     )
+
+@bot.tree.command(
+    name="pollen-anzeigen",
+    description="Zeigt alle Polleneinträge eines Breeder-Projekts"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts"
+)
+async def pollen_anzeigen(
+    interaction: discord.Interaction,
+    projekt_id: int
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    pollen = lade_breeder_pollen(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not pollen:
+        await interaction.followup.send(
+            "ℹ️ Für dieses Breeder-Projekt wurden "
+            "noch keine Polleneinträge angelegt.",
+            ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title=f"🌾 Pollen – {projekt[1]}",
+        description=f"Breeder-Projekt **#{projekt_id}**"
+    )
+
+    for nummer, eintrag in enumerate(pollen, start=1):
+        (
+            pollen_id,
+            name,
+            herkunft,
+            sammeldatum,
+            menge,
+            lagerung,
+            status,
+            notizen,
+            erstellt_am
+        ) = eintrag
+
+        text = f"🌾 **Name:** {name}"
+
+        if herkunft:
+            text += f"\n🧬 **Herkunft / Genetik:** {herkunft}"
+
+        if sammeldatum:
+            text += f"\n📅 **Sammeldatum:** {sammeldatum}"
+
+        if menge:
+            text += f"\n⚖️ **Menge:** {menge}"
+
+        if lagerung:
+            text += f"\n❄️ **Lagerung:** {lagerung}"
+
+        if status:
+            text += f"\n📊 **Status:** {status}"
+
+        if notizen:
+            text += f"\n📝 **Notizen:** {notizen}"
+
+        embed.add_field(
+            name=f"🌾 Pollen #{nummer}",
+            value=text,
+            inline=False
+        )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    await interaction.followup.send(
+        embed=embed,
+        ephemeral=True
+            )
 
 @bot.tree.command(
     name="profil-bearbeiten",
