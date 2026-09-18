@@ -2417,6 +2417,32 @@ def aktualisiere_breeder_pollen(
 
     return aktualisiert
 
+def loesche_breeder_pollen(
+    pollen_id,
+    projekt_id,
+    grower_id
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        DELETE FROM breeder_pollen
+        WHERE id = %s
+          AND projekt_id = %s
+          AND grower_id = %s
+    """, (
+        pollen_id,
+        projekt_id,
+        grower_id
+    ))
+
+    geloescht = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return geloescht
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -4731,6 +4757,77 @@ async def pollen_bearbeiten(
     await interaction.followup.send(
         f"✅ Pollen #{pollen_nummer} – **{neuer_name}** "
         f"in Breeder-Projekt #{projekt_id} wurde aktualisiert.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="pollen-loeschen",
+    description="Löscht einen Polleneintrag aus einem Breeder-Projekt"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    pollen_nummer="Nummer des Polleneintrags",
+    bestaetigen="Löschen wirklich bestätigen"
+)
+async def pollen_loeschen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    pollen_nummer: int,
+    bestaetigen: bool
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    pollen = lade_breeder_pollen(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if pollen_nummer < 1 or pollen_nummer > len(pollen):
+        await interaction.followup.send(
+            f"❌ Pollen #{pollen_nummer} wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    eintrag = pollen[pollen_nummer - 1]
+    pollen_id = eintrag[0]
+    pollen_name = eintrag[1]
+
+    if not bestaetigen:
+        await interaction.followup.send(
+            f"ℹ️ Löschen von Pollen #{pollen_nummer} – "
+            f"**{pollen_name}** wurde nicht bestätigt.",
+            ephemeral=True
+        )
+        return
+
+    geloescht = loesche_breeder_pollen(
+        pollen_id,
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not geloescht:
+        await interaction.followup.send(
+            "❌ Der Polleneintrag konnte nicht gelöscht werden.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.followup.send(
+        f"✅ Pollen #{pollen_nummer} – **{pollen_name}** "
+        f"wurde aus Breeder-Projekt #{projekt_id} gelöscht.",
         ephemeral=True
     )
 
