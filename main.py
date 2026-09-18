@@ -167,6 +167,23 @@ def init_db():
             UNIQUE (projekt_id, grower_id, generation)
         )
     """)
+
+    # Breeder-Pollen
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS breeder_pollen (
+            id BIGSERIAL PRIMARY KEY,
+            projekt_id BIGINT NOT NULL,
+            grower_id BIGINT NOT NULL,
+            name TEXT NOT NULL,
+            herkunft TEXT,
+            sammeldatum TEXT,
+            menge TEXT,
+            lagerung TEXT,
+            status TEXT,
+            notizen TEXT,
+            erstellt_am TEXT
+        )
+    """)
     
     # Pflanzenprofil erweitern
     cursor.execute("""
@@ -2270,6 +2287,55 @@ def loesche_breeder_generation(
 
     return geloescht
 
+def speichere_breeder_pollen(
+    projekt_id,
+    grower_id,
+    name,
+    herkunft=None,
+    sammeldatum=None,
+    menge=None,
+    lagerung=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO breeder_pollen (
+            projekt_id,
+            grower_id,
+            name,
+            herkunft,
+            sammeldatum,
+            menge,
+            lagerung,
+            status,
+            notizen,
+            erstellt_am
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING id
+    """, (
+        projekt_id,
+        grower_id,
+        name,
+        herkunft,
+        sammeldatum,
+        menge,
+        lagerung,
+        status,
+        notizen,
+        datetime.now().isoformat()
+    ))
+
+    pollen_id = cursor.fetchone()[0]
+
+    connection.commit()
+    connection.close()
+
+    return pollen_id
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -4267,6 +4333,131 @@ async def generation_loeschen(
     await interaction.followup.send(
         f"✅ Generation **{generation}** wurde aus "
         f"Breeder-Projekt #{projekt_id} gelöscht.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="pollen-erstellen",
+    description="Erstellt einen Polleneintrag für ein Breeder-Projekt"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    name="Name oder Bezeichnung des Pollens",
+    herkunft="Herkunft oder Genetik",
+    sammeldatum="Datum der Pollensammlung",
+    menge="Gesammelte Menge",
+    lagerung="Art oder Ort der Lagerung",
+    status="Aktueller Status",
+    notizen="Zusätzliche Notizen"
+)
+async def pollen_erstellen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    name: str,
+    herkunft: str = None,
+    sammeldatum: str = None,
+    menge: str = None,
+    lagerung: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    pollen_id = speichere_breeder_pollen(
+        projekt_id,
+        interaction.user.id,
+        name,
+        herkunft,
+        sammeldatum,
+        menge,
+        lagerung,
+        status,
+        notizen
+    )
+
+    embed = discord.Embed(
+        title=f"🌾 Pollen – {name}",
+        description=f"Breeder-Projekt **#{projekt_id} • {projekt[1]}**"
+    )
+
+    if herkunft:
+        embed.add_field(
+            name="🧬 Herkunft / Genetik",
+            value=herkunft,
+            inline=False
+        )
+
+    if sammeldatum:
+        embed.add_field(
+            name="📅 Sammeldatum",
+            value=sammeldatum,
+            inline=False
+        )
+
+    if menge:
+        embed.add_field(
+            name="⚖️ Menge",
+            value=menge,
+            inline=False
+        )
+
+    if lagerung:
+        embed.add_field(
+            name="❄️ Lagerung",
+            value=lagerung,
+            inline=False
+        )
+
+    if status:
+        embed.add_field(
+            name="📊 Status",
+            value=status,
+            inline=False
+        )
+
+    if notizen:
+        embed.add_field(
+            name="📝 Notizen",
+            value=notizen,
+            inline=False
+        )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    pollen_channel = discord.utils.get(
+        interaction.guild.text_channels,
+        name="pollen"
+    )
+
+    if pollen_channel is None:
+        await interaction.followup.send(
+            f"⚠️ Pollen **{name}** wurde gespeichert, "
+            "aber der Kanal #pollen wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    await pollen_channel.send(
+        embed=embed
+    )
+
+    await interaction.followup.send(
+        f"✅ Pollen **{name}** wurde gespeichert und in "
+        "#pollen veröffentlicht.",
         ephemeral=True
     )
 
