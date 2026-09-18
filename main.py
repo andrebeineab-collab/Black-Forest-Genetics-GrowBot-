@@ -2369,6 +2369,54 @@ def lade_breeder_pollen(
 
     return pollen
 
+def aktualisiere_breeder_pollen(
+    pollen_id,
+    projekt_id,
+    grower_id,
+    name=None,
+    herkunft=None,
+    sammeldatum=None,
+    menge=None,
+    lagerung=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        UPDATE breeder_pollen
+        SET
+            name = COALESCE(%s, name),
+            herkunft = COALESCE(%s, herkunft),
+            sammeldatum = COALESCE(%s, sammeldatum),
+            menge = COALESCE(%s, menge),
+            lagerung = COALESCE(%s, lagerung),
+            status =COALESCE(%s, status),
+            notizen = COALESCE(%s, notizen)
+        WHERE id = %s
+          AND projekt_id = %s
+          AND grower_id = %s
+    """, (
+        name,
+        herkunft,
+        sammeldatum,
+        menge,
+        lagerung,
+        status,
+        notizen,
+        pollen_id,
+        projekt_id,
+        grower_id
+    ))
+
+    aktualisiert = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return aktualisiert
+
 def lade_breeder_stammbaum_mehrstufig(
     projekt_id,
     grower_id,
@@ -4584,6 +4632,107 @@ async def pollen_anzeigen(
         embed=embed,
         ephemeral=True
             )
+
+@bot.tree.command(
+    name="pollen-bearbeiten",
+    description="Bearbeitet einen Polleneintrag eines Breeder-Projekts"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    pollen_nummer="Nummer des Polleneintrags",
+    name="Neuer Name oder neue Bezeichnung",
+    herkunft="Neue Herkunft oder Genetik",
+    sammeldatum="Neues Sammeldatum",
+    menge="Neue Menge",
+    lagerung="Neue Lagerung",
+    status="Neuer Status",
+    notizen="Neue Notizen"
+)
+async def pollen_bearbeiten(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    pollen_nummer: int,
+    name: str = None,
+    herkunft: str = None,
+    sammeldatum: str = None,
+    menge: str = None,
+    lagerung: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    pollen = lade_breeder_pollen(
+        projekt_id,
+        interaction.user.id
+    )
+    if pollen_nummer < 1 or pollen_nummer > len(pollen):
+        await interaction.followup.send(
+            f"❌ Pollen #{pollen_nummer} wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    if all(
+        wert is None
+        for wert in (
+            name,
+            herkunft,
+            sammeldatum,
+            menge,
+            lagerung,
+            status,
+            notizen
+        )
+    ):
+        await interaction.followup.send(
+            "ℹ️ Du hast keine Änderungen angegeben.",
+            ephemeral=True
+        )
+        return
+    eintrag = pollen[pollen_nummer - 1]
+
+    pollen_id = eintrag[0]
+    alter_name = eintrag[1]
+
+    aktualisiert = aktualisiere_breeder_pollen(
+        pollen_id,
+        projekt_id,
+        interaction.user.id,
+        name=name,
+        herkunft=herkunft,
+        sammeldatum=sammeldatum,
+        menge=menge,
+        lagerung=lagerung,
+        status=status,
+        notizen=notizen
+    )
+
+    if not aktualisiert:
+        await interaction.followup.send(
+            "❌ Der Polleneintrag konnte nicht aktualisiert werden.",
+            ephemeral=True
+        )
+        return
+    neuer_name = name if name is not None else alter_name
+
+    await interaction.followup.send(
+        f"✅ Pollen #{pollen_nummer} – **{neuer_name}** "
+        f"in Breeder-Projekt #{projekt_id} wurde aktualisiert.",
+        ephemeral=True
+    )
 
 @bot.tree.command(
     name="profil-bearbeiten",
