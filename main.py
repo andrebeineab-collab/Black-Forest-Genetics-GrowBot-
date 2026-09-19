@@ -2590,6 +2590,38 @@ def speichere_breeder_elite_genetik(
 
     return elite_id
 
+def lade_breeder_elite_genetiken(
+    projekt_id,
+    grower_id
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            name,
+            kreuzung,
+            generation,
+            phaenotyp,
+            merkmale,
+            status,
+            notizen,
+            erstellt_am
+        FROM breeder_elite_genetiken
+        WHERE projekt_id = %s
+          AND grower_id = %s
+        ORDER BY id ASC
+    """, (
+        projekt_id,
+        grower_id
+    ))
+    elite_genetiken = cursor.fetchall()
+
+    connection.close()
+
+    return elite_genetiken
+
 def lade_breeder_pollen(
     projekt_id,
     grower_id
