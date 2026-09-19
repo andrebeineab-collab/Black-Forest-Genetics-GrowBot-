@@ -1755,6 +1755,22 @@ def lade_pflanze(thread_id):
 
     return pflanze
 
+def loesche_pflanze(thread_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        DELETE FROM plants
+        WHERE discord_thread_id = %s
+    """, (thread_id,))
+
+    geloescht = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return geloescht
+
 def aktualisiere_pflanze(
     thread_id,
     phase,
