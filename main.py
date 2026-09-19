@@ -5702,6 +5702,96 @@ async def elite_erstellen(
     )
 
 @bot.tree.command(
+    name="elite-anzeigen",
+    description="Zeigt alle Elite-Genetiken eines Breeder-Projekts"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts"
+)
+async def elite_anzeigen(
+    interaction: discord.Interaction,
+    projekt_id: int
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    elite_genetiken = lade_breeder_elite_genetiken(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not elite_genetiken:
+        await interaction.followup.send(
+            "ℹ️ Für dieses Breeder-Projekt wurden "
+            "noch keine Elite-Genetiken angelegt.",
+            ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title=f"🏆 Elite-Genetiken – {projekt[1]}",
+        description=f"Breeder-Projekt **#{projekt_id}**"
+    )
+    for nummer, eintrag in enumerate(elite_genetiken, start=1):
+        (
+            elite_id,
+            name,
+            kreuzung,
+            generation,
+            phaenotyp,
+            merkmale,
+            status,
+            notizen,
+            erstellt_am
+        ) = eintrag
+
+        text = f"🏆 **Name:** {name}"
+
+        if kreuzung:
+            text += f"\n🧬 **Kreuzung:** {kreuzung}"
+
+        if generation:
+            text += f"\n🌱 **Generation:** {generation}"
+
+        if phaenotyp:
+            text += f"\n🌿 **Phänotyp:** {phaenotyp}"
+
+        if merkmale:
+            text += f"\n⭐ **Merkmale:** {merkmale}"
+
+        if status:
+            text += f"\n📊 **Status:** {status}"
+
+        if notizen:
+            text += f"\n📝 **Notizen:** {notizen}"
+
+        embed.add_field(
+            name=f"🏆 Elite-Genetik #{nummer}",
+            value=text,
+            inline=False
+        )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    await interaction.followup.send(
+        embed=embed,
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
