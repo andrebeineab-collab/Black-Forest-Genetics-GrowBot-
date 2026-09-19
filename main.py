@@ -2622,6 +2622,54 @@ def lade_breeder_elite_genetiken(
 
     return elite_genetiken
 
+def aktualisiere_breeder_elite_genetik(
+    elite_id,
+    projekt_id,
+    grower_id,
+    name=None,
+    kreuzung=None,
+    generation=None,
+    phaenotyp=None,
+    merkmale=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        UPDATE breeder_elite_genetiken
+        SET
+            name = COALESCE(%s, name),
+            kreuzung = COALESCE(%s, kreuzung),
+            generation = COALESCE(%s, generation),
+            phaenotyp = COALESCE(%s, phaenotyp),
+            merkmale = COALESCE(%s, merkmale),
+            status = COALESCE(%s, status),
+            notizen = COALESCE(%s, notizen)
+        WHERE id = %s
+          AND projekt_id = %s
+          AND grower_id = %s
+    """, (
+        name,
+        kreuzung,
+        generation,
+        phaenotyp,
+        merkmale,
+        status,
+        notizen,
+        elite_id,
+        projekt_id,
+        grower_id
+    ))
+
+    aktualisiert = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return aktualisiert
+
 def lade_breeder_pollen(
     projekt_id,
     grower_id
@@ -5788,6 +5836,111 @@ async def elite_anzeigen(
 
     await interaction.followup.send(
         embed=embed,
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="elite-bearbeiten",
+    description="Bearbeitet eine Elite-Genetik"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    elite_nummer="Nummer der Elite-Genetik",
+    name="Neuer Name",
+    kreuzung="Neue Kreuzung",
+    generation="Neue Generation",
+    phaenotyp="Neuer Phänotyp",
+    merkmale="Neue Merkmale",
+    status="Neuer Status",
+    notizen="Neue Notizen"
+)
+async def elite_bearbeiten(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    elite_nummer: int,
+    name: str = None,
+    kreuzung: str = None,
+    generation: str = None,
+    phaenotyp: str = None,
+    merkmale: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    elite_genetiken = lade_breeder_elite_genetiken(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if (
+        elite_nummer < 1
+        or elite_nummer > len(elite_genetiken)
+    ):
+        await interaction.followup.send(
+            f"❌ Elite-Genetik #{elite_nummer} wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    if all(
+        wert is None
+        for wert in (
+            name,
+            kreuzung,
+            generation,
+            phaenotyp,
+            merkmale,
+            status,
+            notizen
+        )
+    ):
+        await interaction.followup.send(
+            "ℹ️ Du hast keine Änderungen angegeben.",
+            ephemeral=True
+        )
+        return
+
+    eintrag = elite_genetiken[elite_nummer - 1]
+    elite_id = eintrag[0]
+    alter_name = eintrag[1]
+
+    aktualisiert = aktualisiere_breeder_elite_genetik(
+        elite_id,
+        projekt_id,
+        interaction.user.id,
+        name=name,
+        kreuzung=kreuzung,
+        generation=generation,
+        phaenotyp=phaenotyp,
+        merkmale=merkmale,
+        status=status,
+        notizen=notizen
+    )
+
+    if not aktualisiert:
+        await interaction.followup.send(
+            "❌ Die Elite-Genetik konnte nicht aktualisiert werden.",
+            ephemeral=True
+        )
+        return
+
+    neuer_name = name if name is not None else alter_name
+    await interaction.followup.send(
+        f"✅ Elite-Genetik #{elite_nummer} – **{neuer_name}** "
+        f"wurde aktualisiert.",
         ephemeral=True
     )
 
