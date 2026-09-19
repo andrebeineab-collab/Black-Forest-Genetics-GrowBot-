@@ -203,6 +203,23 @@ def init_db():
             erstellt_am TEXT
         )
     """)
+
+    # Breeder-Elite-Genetiken
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS breeder_elite_genetiken (
+            id BIGSERIAL PRIMARY KEY,
+            projekt_id BIGINT NOT NULL,
+            grower_id BIGINT NOT NULL,
+            name TEXT NOT NULL,
+            kreuzung TEXT,
+            generation TEXT,
+            phaenotyp TEXT,
+            merkmale TEXT,
+            status TEXT,
+            notizen TEXT,
+            erstellt_am TEXT
+        )
+    """)
     
     # Pflanzenprofil erweitern
     cursor.execute("""
