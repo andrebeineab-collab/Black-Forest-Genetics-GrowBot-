@@ -2444,6 +2444,60 @@ def lade_breeder_samenproduktion(
 
     return samenproduktionen
 
+def aktualisiere_breeder_samenproduktion(
+    samenproduktion_id,
+    projekt_id,
+    grower_id,
+    name=None,
+    kreuzung=None,
+    generation=None,
+    erntedatum=None,
+    samenanzahl=None,
+    keimrate=None,
+    lagerung=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        UPDATE breeder_samenproduktion
+        SET
+            name = COALESCE(%s, name),
+            kreuzung = COALESCE(%s, kreuzung),
+            generation = COALESCE(%s, generation),
+            erntedatum = COALESCE(%s, erntedatum),
+            samenanzahl = COALESCE(%s, samenanzahl),
+            keimrate = COALESCE(%s, keimrate),
+            lagerung = COALESCE(%s, lagerung),
+            status = COALESCE(%s, status),
+            notizen = COALESCE(%s, notizen)
+        WHERE id = %s
+          AND projekt_id = %s
+          AND grower_id = %s
+    """, (
+        name,
+        kreuzung,
+        generation,
+        erntedatum,
+        samenanzahl,
+        keimrate,
+        lagerung,
+        status,
+        notizen,
+        samenproduktion_id,
+        projekt_id,
+        grower_id
+    ))
+
+    aktualisiert = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return aktualisiert
+
 def lade_breeder_pollen(
     projekt_id,
     grower_id
@@ -5192,6 +5246,133 @@ async def samenproduktion_anzeigen(
 
     await interaction.followup.send(
         embed=embed,
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="samenproduktion-bearbeiten",
+    description="Bearbeitet eine Samenproduktion"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    samenproduktion_nummer="Nummer der Samenproduktion",
+    name="Neuer Name",
+    kreuzung="Neue Kreuzung",
+    generation="Neue Generation",
+    erntedatum="Neues Erntedatum",
+    samenanzahl="Neue Samenanzahl",
+    keimrate="Neue Keimrate in Prozent",
+    lagerung="Neue Lagerung",
+    status="Neuer Status",
+    notizen="Neue Notizen"
+)
+async def samenproduktion_bearbeiten(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    samenproduktion_nummer: int,
+    name: str = None,
+    kreuzung: str = None,
+    generation: str = None,
+    erntedatum: str = None,
+    samenanzahl: int = None,
+    keimrate: float = None,
+    lagerung: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    samenproduktionen = lade_breeder_samenproduktion(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if (
+        samenproduktion_nummer < 1
+        or samenproduktion_nummer > len(samenproduktionen)
+    ):
+        await interaction.followup.send(
+            f"❌ Samenproduktion #{samenproduktion_nummer} wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    if all(
+        wert is None
+        for wert in (
+            name,
+            kreuzung,
+            generation,
+            erntedatum,
+            samenanzahl,
+            keimrate,
+            lagerung,
+            status,
+            notizen
+        )
+    ):
+        await interaction.followup.send(
+            "ℹ️ Du hast keine Änderungen angegeben.",
+            ephemeral=True
+        )
+        return
+
+    if samenanzahl is not None and samenanzahl < 0:
+        await interaction.followup.send(
+            "❌ Die Samenanzahl darf nicht negativ sein.",
+            ephemeral=True
+        )
+        return
+
+    if keimrate is not None and not 0 <= keimrate <= 100:
+        await interaction.followup.send(
+            "❌ Die Keimrate muss zwischen 0 und 100 liegen.",
+            ephemeral=True
+        )
+        return
+
+    eintrag = samenproduktionen[samenproduktion_nummer - 1]
+    samenproduktion_id = eintrag[0]
+    alter_name = eintrag[1]
+
+    aktualisiert = aktualisiere_breeder_samenproduktion(
+        samenproduktion_id,
+        projekt_id,
+        interaction.user.id,
+        name=name,
+        kreuzung=kreuzung,
+        generation=generation,
+        erntedatum=erntedatum,
+        samenanzahl=samenanzahl,
+        keimrate=keimrate,
+        lagerung=lagerung,
+        status=status,
+        notizen=notizen
+    )
+    if not aktualisiert:
+        await interaction.followup.send(
+            "❌ Die Samenproduktion konnte nicht aktualisiert werden.",
+            ephemeral=True
+        )
+        return
+
+    neuer_name = name if name is not None else alter_name
+
+    await interaction.followup.send(
+        f"✅ Samenproduktion #{samenproduktion_nummer} – "
+        f"**{neuer_name}** wurde aktualisiert.",
         ephemeral=True
     )
 
