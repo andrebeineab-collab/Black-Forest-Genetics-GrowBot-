@@ -5579,6 +5579,129 @@ async def samenproduktion_loeschen(
     )
 
 @bot.tree.command(
+    name="elite-erstellen",
+    description="Erstellt einen Eintrag für eine Elite-Genetik"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    name="Name der Elite-Genetik",
+    kreuzung="Zugehörige Kreuzung",
+    generation="Generation, z. B. F1, F2, S1",
+    phaenotyp="Ausgewählter Phänotyp",
+    merkmale="Besondere Merkmale",
+    status="Aktueller Status",
+    notizen="Zusätzliche Notizen"
+)
+async def elite_erstellen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    name: str,
+    kreuzung: str = None,
+    generation: str = None,
+    phaenotyp: str = None,
+    merkmale: str = None,
+    status: str = None,
+    notizen: str = None
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    elite_id = speichere_breeder_elite_genetik(
+        projekt_id,
+        interaction.user.id,
+        name,
+        kreuzung,
+        generation,
+        phaenotyp,
+        merkmale,
+        status,
+        notizen
+    )
+
+    embed = discord.Embed(
+        title=f"🏆 Elite-Genetik – {name}",
+        description=f"Breeder-Projekt **#{projekt_id} • {projekt[1]}**"
+    )
+
+    if kreuzung:
+        embed.add_field(
+            name="🧬 Kreuzung",
+            value=kreuzung,
+            inline=False
+        )
+
+    if generation:
+        embed.add_field(
+            name="🌱 Generation",
+            value=generation,
+            inline=False
+        )
+
+    if phaenotyp:
+        embed.add_field(
+            name="🌿 Phänotyp",
+            value=phaenotyp,
+            inline=False
+        )
+        if merkmale:
+        embed.add_field(
+            name="⭐ Merkmale",
+            value=merkmale,
+            inline=False
+        )
+
+    if status:
+        embed.add_field(
+            name="📊 Status",
+            value=status,
+            inline=False
+        )
+
+    if notizen:
+        embed.add_field(
+            name="📝 Notizen",
+            value=notizen,
+            inline=False
+        )
+
+    embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    elite_channel = discord.utils.get(
+        interaction.guild.text_channels,
+        name="elite-genetiken"
+    )
+    if elite_channel is None:
+        await interaction.followup.send(
+            f"⚠️ Elite-Genetik **{name}** wurde gespeichert, "
+            "aber der Kanal #elite-genetiken wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    await elite_channel.send(
+        embed=embed
+    )
+
+    await interaction.followup.send(
+        f"✅ Elite-Genetik **{name}** wurde gespeichert und "
+        "#elite-genetiken veröffentlicht.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
