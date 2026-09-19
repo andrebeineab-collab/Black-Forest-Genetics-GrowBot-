@@ -5098,6 +5098,104 @@ async def samenproduktion_erstellen(
     )
 
 @bot.tree.command(
+    name="samenproduktion-anzeigen",
+    description="Zeigt alle Samenproduktionen eines Breeder-Projekts"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts"
+)
+async def samenproduktion_anzeigen(
+    interaction: discord.Interaction,
+    projekt_id: int
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    samenproduktionen = lade_breeder_samenproduktion(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not samenproduktionen:
+        await interaction.followup.send(
+            "ℹ️ Für dieses Breeder-Projekt wurden "
+            "noch keine Samenproduktionen angelegt.",
+            ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title=f"🌰 Samenproduktion – {projekt[1]}",
+        description=f"Breeder-Projekt **#{projekt_id}**"
+    )
+    for nummer, eintrag in enumerate(samenproduktionen, start=1):
+        (
+            samenproduktion_id,
+            name,
+            kreuzung,
+            generation,
+            erntedatum,
+            samenanzahl,
+            keimrate,
+            lagerung,
+            status,
+            notizen,
+            erstellt_am
+        ) = eintrag
+
+        text = f"🌰 **Name:** {name}"
+
+        if kreuzung:
+            text += f"\n🧬 **Kreuzung:** {kreuzung}"
+
+        if generation:
+            text += f"\n🔬 **Generation:** {generation}"
+
+        if erntedatum:
+            text += f"\n📅 **Erntedatum:** {erntedatum}"
+
+        if samenanzahl is not None:
+            text += f"\n🌰 **Samenanzahl:** {samenanzahl}"
+
+        if keimrate is not None:
+            text += f"\n📈 **Keimrate:** {keimrate:.2f}%"
+
+        if lagerung:
+            text += f"\n❄️ **Lagerung:** {lagerung}"
+
+        if status:
+            text += f"\n📊 **Status:** {status}"
+
+        if notizen:
+            text += f"\n📝 **Notizen:** {notizen}"
+
+        embed.add_field(
+            name=f"🌰 Samenproduktion #{nummer}",
+            value=text,
+            inline=False
+        )
+
+        embed.set_footer(
+        text="Black Forest Genetics • Breeder Database"
+    )
+
+    await interaction.followup.send(
+        embed=embed,
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
