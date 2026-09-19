@@ -5654,7 +5654,7 @@ async def elite_erstellen(
             value=phaenotyp,
             inline=False
         )
-        if merkmale:
+    if merkmale:
         embed.add_field(
             name="⭐ Merkmale",
             value=merkmale,
