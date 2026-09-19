@@ -3403,6 +3403,65 @@ async def phasendauer(interaction: discord.Interaction):
     lichtzyklus="Lichtzyklus, z.B. 18/6 oder 12/12",
     status="Status der Pflanze, z.B. Aktiv"
 )
+@app_commands.choices(
+    phase=[
+        app_commands.Choice(name="🌱 Keimung", value="Keimung"),
+        app_commands.Choice(name="🌿 Sämling", value="Sämling"),
+        app_commands.Choice(name="🍃 Wachstum", value="Wachstum"),
+        app_commands.Choice(name="🌸 Blüte", value="Blüte"),
+        app_commands.Choice(name="🌾 Trocknung", value="Trocknung"),
+        app_commands.Choice(name="🫙 Curing", value="Curing"),
+        app_commands.Choice(name="🧬 Klon", value="Klon"),
+    ],
+    medium=[
+        app_commands.Choice(name="🌱 Erde", value="Erde"),
+        app_commands.Choice(name="🥥 Coco", value="Coco"),
+        app_commands.Choice(name="💧 Hydro", value="Hydro"),
+        app_commands.Choice(name="🧱 Steinwolle", value="Steinwolle"),
+        app_commands.Choice(name="🌿 Living Soil", value="Living Soil"),
+    ],
+    topfgroesse=[
+        app_commands.Choice(name="🪣 1 Liter", value="1 L"),
+        app_commands.Choice(name="🪣 3 Liter", value="3 L"),
+        app_commands.Choice(name="🪣 5 Liter", value="5 L"),
+        app_commands.Choice(name="🪣 7 Liter", value="7 L"),
+        app_commands.Choice(name="🪣 9 Liter", value="9 L"),
+        app_commands.Choice(name="🪣 11 Liter", value="11 L"),
+        app_commands.Choice(name="🪣 15 Liter", value="15 L"),
+        app_commands.Choice(name="🪣 20 Liter", value="20 L"),
+        app_commands.Choice(name="🪣 25 Liter", value="25 L"),
+        app_commands.Choice(name="🪣 30 Liter", value="30 L"),
+        app_commands.Choice(name="🪣 1 US gal", value="1 US gal"),
+        app_commands.Choice(name="🪣 2 US gal", value="2 US gal"),
+        app_commands.Choice(name="🪣 3 US gal", value="3 US gal"),
+        app_commands.Choice(name="🪣 5 US gal", value="5 US gal"),
+        app_commands.Choice(name="🪣 7 US gal", value="7 US gal"),
+        app_commands.Choice(name="🪣 10 US gal", value="10 US gal"),
+        app_commands.Choice(name="🪣 15 US gal", value="15 US gal"),
+        app_commands.Choice(name="🪣 20 US gal", value="20 US gal"),
+    ],
+    anbaumethode=[
+        app_commands.Choice(name="🏠 Indoor", value="Indoor"),
+        app_commands.Choice(name="🌳 Outdoor", value="Outdoor"),
+        app_commands.Choice(name="🏡 Gewächshaus", value="Gewächshaus"),
+    ],
+    genetik_typ=[
+        app_commands.Choice(name="🧬 Regulär", value="Regulär"),
+        app_commands.Choice(name="♀️ Feminisiert", value="Feminisiert"),
+        app_commands.Choice(name="⚡ Autoflower", value="Autoflower"),
+    ],
+    lichtzyklus=[
+        app_commands.Choice(name="☀️ 18/6", value="18/6"),
+        app_commands.Choice(name="🌤️ 20/4", value="20/4"),
+        app_commands.Choice(name="💡 24/0", value="24/0"),
+        app_commands.Choice(name="🌙 12/12", value="12/12"),
+    ],
+    status=[
+        app_commands.Choice(name="Aktiv", value="Aktiv"),
+        app_commands.Choice(name="Pausiert", value="Pausiert"),
+        app_commands.Choice(name="Abgeschlossen", value="Abgeschlossen"),
+    ],
+        )
 async def pflanze_erstellen(
     interaction: discord.Interaction,
     name: str,
