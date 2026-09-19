@@ -3404,6 +3404,12 @@ async def phasendauer(interaction: discord.Interaction):
     status="Status der Pflanze, z.B. Aktiv"
 )
 @app_commands.choices(
+    sorte=[
+        app_commands.Choice(name="🌿 Sativa", value="Sativa"),
+        app_commands.Choice(name="🌿 Indica", value="Indica"),
+        app_commands.Choice(name="🌿 Hybrid", value="Hybrid"),
+        app_commands.Choice(name="🌿 Ruderalis", value="Ruderalis"),
+    ],
     phase=[
         app_commands.Choice(name="🌱 Keimung", value="Keimung"),
         app_commands.Choice(name="🌿 Sämling", value="Sämling"),
@@ -3439,6 +3445,19 @@ async def phasendauer(interaction: discord.Interaction):
         app_commands.Choice(name="🪣 10 US gal", value="10 US gal"),
         app_commands.Choice(name="🪣 15 US gal", value="15 US gal"),
         app_commands.Choice(name="🪣 20 US gal", value="20 US gal"),
+    ],
+    lampe=[
+        app_commands.Choice(name="💡 60 W", value="60 W"),
+        app_commands.Choice(name="💡 100 W", value="100 W"),
+        app_commands.Choice(name="💡 150 W", value="150 W"),
+        app_commands.Choice(name="💡 200 W", value="200 W"),
+        app_commands.Choice(name="💡 240 W", value="240 W"),
+        app_commands.Choice(name="💡 300 W", value="300 W"),
+        app_commands.Choice(name="💡 400 W", value="400 W"),
+        app_commands.Choice(name="💡 480 W", value="480 W"),
+        app_commands.Choice(name="💡 600 W", value="600 W"),
+        app_commands.Choice(name="💡 720 W", value="720 W"),
+        app_commands.Choice(name="💡 1000 W", value="1000 W"),
     ],
     anbaumethode=[
         app_commands.Choice(name="🏠 Indoor", value="Indoor"),
