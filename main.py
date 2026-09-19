@@ -2670,6 +2670,32 @@ def aktualisiere_breeder_elite_genetik(
 
     return aktualisiert
 
+def loesche_breeder_elite_genetik(
+    elite_id,
+    projekt_id,
+    grower_id
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        DELETE FROM breeder_elite_genetiken
+        WHERE id = %s
+          AND projekt_id = %s
+          AND grower_id = %s
+    """, (
+        elite_id,
+        projekt_id,
+        grower_id
+    ))
+
+    geloescht = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return geloescht
+
 def lade_breeder_pollen(
     projekt_id,
     grower_id
@@ -5941,6 +5967,81 @@ async def elite_bearbeiten(
     await interaction.followup.send(
         f"✅ Elite-Genetik #{elite_nummer} – **{neuer_name}** "
         f"wurde aktualisiert.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="elite-loeschen",
+    description="Löscht eine Elite-Genetik aus einem Breeder-Projekt"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    elite_nummer="Nummer der Elite-Genetik",
+    bestaetigen="Löschen wirklich bestätigen"
+)
+async def elite_loeschen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    elite_nummer: int,
+    bestaetigen: bool
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    elite_genetiken = lade_breeder_elite_genetiken(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if (
+        elite_nummer < 1
+        or elite_nummer > len(elite_genetiken)
+    ):
+        await interaction.followup.send(
+            f"❌ Elite-Genetik #{elite_nummer} wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+        eintrag = elite_genetiken[elite_nummer - 1]
+    elite_id = eintrag[0]
+    elite_name = eintrag[1]
+
+    if not bestaetigen:
+        await interaction.followup.send(
+            f"ℹ️ Löschen von Elite-Genetik "
+            f"#{elite_nummer} – **{elite_name}** "
+            f"wurde nicht bestätigt.",
+            ephemeral=True
+        )
+        return
+
+    geloescht = loesche_breeder_elite_genetik(
+        elite_id,
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not geloescht:
+        await interaction.followup.send(
+            "❌ Die Elite-Genetik konnte nicht gelöscht werden.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.followup.send(
+        f"✅ Elite-Genetik #{elite_nummer} – "
+        f"**{elite_name}** wurde aus "
+        f"Breeder-Projekt #{projekt_id} gelöscht.",
         ephemeral=True
     )
 
