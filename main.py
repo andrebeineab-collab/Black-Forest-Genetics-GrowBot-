@@ -6062,6 +6062,54 @@ async def elite_loeschen(
     )
 
 @bot.tree.command(
+    name="pflanze-loeschen",
+    description="Löscht das Pflanzenprofil dieses Growlogs"
+)
+@app_commands.describe(
+    bestaetigen="Löschen wirklich bestätigen"
+)
+async def pflanze_loeschen(
+    interaction: discord.Interaction,
+    bestaetigen: bool
+):
+    if not isinstance(interaction.channel, discord.Thread):
+        await interaction.response.send_message(
+            "❌ Dieser Befehl funktioniert nur innerhalb eines Growlog-Threads.",
+            ephemeral=True
+        )
+        return
+
+    pflanze = lade_pflanze(interaction.channel.id)
+    if not pflanze:
+        await interaction.response.send_message(
+            "❌ Für diesen Growlog wurde kein Pflanzenprofil gefunden.",
+            ephemeral=True
+        )
+        return
+
+    name = pflanze[1]
+
+    if not bestaetigen:
+        await interaction.response.send_message(
+            f"ℹ️ Löschen des Pflanzenprofils **{name}** wurde nicht bestätigt.",
+            ephemeral=True
+        )
+        return
+
+    geloescht = loesche_pflanze(interaction.channel.id)
+    if not geloescht:
+        await interaction.response.send_message(
+            "❌ Das Pflanzenprofil konnte nicht gelöscht werden.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.response.send_message(
+        f"✅ Pflanzenprofil **{name}** wurde gelöscht.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
     name="profil-bearbeiten",
     description="Bearbeitet das Pflanzenprofil dieses Growlogs."
 )
