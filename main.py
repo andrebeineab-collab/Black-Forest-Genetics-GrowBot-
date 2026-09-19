@@ -2498,6 +2498,32 @@ def aktualisiere_breeder_samenproduktion(
 
     return aktualisiert
 
+def loesche_breeder_samenproduktion(
+    samenproduktion_id,
+    projekt_id,
+    grower_id
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        DELETE FROM breeder_samenproduktion
+        WHERE id = %s
+          AND projekt_id = %s
+          AND grower_id = %s
+    """, (
+        samenproduktion_id,
+        projekt_id,
+        grower_id
+    ))
+
+    geloescht = cursor.rowcount > 0
+
+    connection.commit()
+    connection.close()
+
+    return geloescht
+
 def lade_breeder_pollen(
     projekt_id,
     grower_id
@@ -5373,6 +5399,84 @@ async def samenproduktion_bearbeiten(
     await interaction.followup.send(
         f"✅ Samenproduktion #{samenproduktion_nummer} – "
         f"**{neuer_name}** wurde aktualisiert.",
+        ephemeral=True
+    )
+
+@bot.tree.command(
+    name="samenproduktion-loeschen",
+    description="Löscht eine Samenproduktion"
+)
+@app_commands.describe(
+    projekt_id="ID des Breeder-Projekts",
+    samenproduktion_nummer="Nummer der Samenproduktion",
+    bestaetigen="Löschen wirklich bestätigen"
+)
+async def samenproduktion_loeschen(
+    interaction: discord.Interaction,
+    projekt_id: int,
+    samenproduktion_nummer: int,
+    bestaetigen: bool
+):
+    await interaction.response.defer(ephemeral=True)
+
+    projekt = lade_breeder_projekt(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if projekt is None:
+        await interaction.followup.send(
+            "❌ Breeder-Projekt nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    samenproduktionen = lade_breeder_samenproduktion(
+        projekt_id,
+        interaction.user.id
+    )
+
+    if (
+        samenproduktion_nummer < 1
+        or samenproduktion_nummer > len(samenproduktionen)
+    ):
+        await interaction.followup.send(
+            f"❌ Samenproduktion "
+            f"#{samenproduktion_nummer} wurde nicht gefunden.",
+            ephemeral=True
+        )
+        return
+
+    eintrag = samenproduktionen[samenproduktion_nummer - 1]
+    samenproduktion_id = eintrag[0]
+    samenproduktion_name = eintrag[1]
+
+    if not bestaetigen:
+        await interaction.followup.send(
+            f"ℹ️ Löschen von Samenproduktion "
+            f"#{samenproduktion_nummer} – **{samenproduktion_name}** "
+            f"wurde nicht bestätigt.",
+            ephemeral=True
+        )
+        return
+
+    geloescht = loesche_breeder_samenproduktion(
+        samenproduktion_id,
+        projekt_id,
+        interaction.user.id
+    )
+
+    if not geloescht:
+        await interaction.followup.send(
+            "❌ Die Samenproduktion konnte nicht gelöscht werden.",
+            ephemeral=True
+        )
+        return
+
+    await interaction.followup.send(
+        f"✅ Samenproduktion #{samenproduktion_nummer} – "
+        f"**{samenproduktion_name}** wurde aus "
+        f"Breeder-Projekt #{projekt_id} gelöscht.",
         ephemeral=True
     )
 
