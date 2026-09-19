@@ -2541,6 +2541,55 @@ def loesche_breeder_samenproduktion(
 
     return geloescht
 
+def speichere_breeder_elite_genetik(
+    projekt_id,
+    grower_id,
+    name,
+    kreuzung=None,
+    generation=None,
+    phaenotyp=None,
+    merkmale=None,
+    status=None,
+    notizen=None
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO breeder_elite_genetiken (
+            projekt_id,
+            grower_id,
+            name,
+            kreuzung,
+            generation,
+            phaenotyp,
+            merkmale,
+            status,
+            notizen,
+            erstellt_am
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING id
+    """, (
+        projekt_id,
+        grower_id,
+        name,
+        kreuzung,
+        generation,
+        phaenotyp,
+        merkmale,
+        status,
+        notizen,
+        datetime.now().isoformat()
+    ))
+
+    elite_id = cursor.fetchone()[0]
+
+    connection.commit()
+    connection.close()
+
+    return elite_id
+
 def lade_breeder_pollen(
     projekt_id,
     grower_id
