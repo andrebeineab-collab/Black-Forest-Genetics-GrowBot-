@@ -6012,7 +6012,7 @@ async def elite_loeschen(
             ephemeral=True
         )
         return
-        eintrag = elite_genetiken[elite_nummer - 1]
+    eintrag = elite_genetiken[elite_nummer - 1]
     elite_id = eintrag[0]
     elite_name = eintrag[1]
 
