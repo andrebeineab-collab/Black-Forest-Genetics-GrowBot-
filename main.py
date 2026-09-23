@@ -531,28 +531,28 @@ async def grow_erstellen(
     )
 
     # Autoflower / Photoperiodisch automatisch verknüpfen
-        ziel_channel_id = get_genetik_growlog_channel_id(bluetentyp)
+    ziel_channel_id = get_genetik_growlog_channel_id(bluetentyp)
 
-        if ziel_channel_id:
-            ziel_channel = bot.get_channel(ziel_channel_id)
+    if ziel_channel_id:
+        ziel_channel = bot.get_channel(ziel_channel_id)
 
-            if ziel_channel is None:
-                try:
-                    ziel_channel = await bot.fetch_channel(ziel_channel_id)
-                except discord.DiscordException:
-                    ziel_channel = None
+        if ziel_channel is None:
+            try:
+                ziel_channel = await bot.fetch_channel(ziel_channel_id)
+            except discord.DiscordException:
+                ziel_channel = None
 
-            if ziel_channel:
-                await ziel_channel.send(
-                    f"## 🌱 {name}\n"
-                    f"🆔 **Pflanzen-ID:** {pflanzen_id}\n"
-                    f"🧬 **Sorte:** {sorte}\n"
-                    f"🌿 **Typ:** {bluetentyp}\n"
-                    f"📍 **Growlog:** {interaction.channel.mention}\n"
-                    f"🌱 **Phase:** {phase_text}\n"
-                    f"👤 **Grower:** {interaction.user.mention}\n"
-                    f"🔗 **Original-Growlog:** {thread.jump_url}"
-                )
+        if ziel_channel:
+            await ziel_channel.send(
+                f"## 🌱 {name}\n"
+                f"🆔 **Pflanzen-ID:** {pflanzen_id}\n"
+                f"🧬 **Sorte:** {sorte}\n"
+                f"🌿 **Typ:** {bluetentyp}\n"
+                f"📍 **Growlog:** {interaction.channel.mention}\n"
+                f"🌱 **Phase:** {phase_text}\n"
+                f"👤 **Grower:** {interaction.user.mention}\n"
+                f"🔗 **Original-Growlog:** {thread.jump_url}"
+            )
 
     await interaction.followup.send(
         f"✅ Growlog erstellt: {thread.mention}",
