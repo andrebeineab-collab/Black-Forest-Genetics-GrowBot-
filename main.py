@@ -15,6 +15,24 @@ from zoneinfo import ZoneInfo
 
 BERLIN_TZ = ZoneInfo("Europe/Berlin")
 
+# =========================
+# GROWLOG KANÄLE
+# =========================
+
+AUTOFLOWER_GROWLOG_CHANNEL_ID = 1533490625658355853
+PHOTOPERIODISCH_GROWLOG_CHANNEL_ID = 1533490729995993149
+
+def get_genetik_growlog_channel_id(bluetentyp: str):
+    typ = (bluetentyp or "").strip().lower()
+
+    if "auto" in typ:
+        return AUTOFLOWER_GROWLOG_CHANNEL_ID
+
+    if "photo" in typ:
+        return PHOTOPERIODISCH_GROWLOG_CHANNEL_ID
+
+    return None
+
 def berechne_pflanzenalter(keimdatum: str) -> tuple[int | None, int | None]:
     """Berechnet Lebenstag und Lebenswoche aus dem Keimdatum."""
 
@@ -69,7 +87,7 @@ def init_db():
             erstellt_am TEXT
         )
     """)
-
+    
     cursor.execute("""
             CREATE TABLE IF NOT EXISTS entries (
                 id BIGSERIAL PRIMARY KEY,
@@ -229,6 +247,11 @@ def init_db():
 
     cursor.execute("""
         ALTER TABLE plants
+        ADD COLUMN IF NOT EXISTS bluetentyp TEXT
+    """)
+
+    cursor.execute("""
+        ALTER TABLE plants
         ADD COLUMN IF NOT EXISTS anbaumethode TEXT
     """)
 
@@ -326,6 +349,10 @@ async def status(interaction: discord.Interaction):
         app_commands.Choice(name="Hybrid", value="Hybrid"),
         app_commands.Choice(name="Ruderalis", value="Ruderalis"),
     ],
+    bluetentyp=[
+        app_commands.Choice(name="Autoflower", value="Autoflower"),
+        app_commands.Choice(name="Photoperiodisch", value="Photoperiodisch"),
+    ],
     anbaumethode=[
         app_commands.Choice(name="Normal", value="Normal"),
         app_commands.Choice(name="LST", value="LST"),
@@ -391,6 +418,7 @@ async def grow_erstellen(
     name: str,
     sorte: str,
     genetik_typ: app_commands.Choice[str],
+    bluetentyp: app_commands.Choice[str],
     anbaumethode: app_commands.Choice[str],
     lichtzyklus: app_commands.Choice[str],
     status: app_commands.Choice[str],
@@ -406,6 +434,7 @@ async def grow_erstellen(
     topfgroesse = topfgroesse.value if topfgroesse else "_"
     lampe = lampe.value if lampe else "_"
     genetik_typ = genetik_typ.value
+    bluetentyp = bluetentyp.value
     anbaumethode = anbaumethode.value
     lichtzyklus = lichtzyklus.value
     status = status.value
@@ -427,6 +456,7 @@ async def grow_erstellen(
         f"🆔 **Pflanzen-ID:** `{pflanzen_id}`\n"
         f"🧬 **Sorte:** {sorte}\n"
         f"🧬 **Genetik-Typ:** {genetik_typ}\n"
+        f"🌱 **Blütentyp:** {bluetentyp}\n"
         f"🌱 **Anbaumethode:** {anbaumethode}\n"
         f"💡 **Lichtzyklus:** {lichtzyklus}\n"
         f"📌 **Status:** {status}\n"
@@ -457,6 +487,7 @@ async def grow_erstellen(
         lampe,
         interaction.user.id,
         genetik_typ,
+        bluetentyp,
         anbaumethode,
         lichtzyklus,
         status
@@ -476,6 +507,7 @@ async def grow_erstellen(
         f"**Pflanze:** {name}\n"
         f"**Sorte:** {sorte}\n"
         f"🧬 **Genetik-Typ:** {genetik_typ}\n"
+        f"🌱 **Blütentyp:** {bluetentyp}\n"
         f"🌱 **Anbaumethode:** {anbaumethode}\n"
         f"💡 **Lichtzyklus:** {lichtzyklus}\n"
         f"📌 **Status:** {status}\n"
@@ -497,6 +529,30 @@ async def grow_erstellen(
         f"📝 **Notizen:** —\n"
         f"📷 **Fotos:** Als Nachricht im Thread hochladen"
     )
+
+    # Autoflower / Photoperiodisch automatisch verknüpfen
+        ziel_channel_id = get_genetik_growlog_channel_id(bluetentyp)
+
+        if ziel_channel_id:
+            ziel_channel = bot.get_channel(ziel_channel_id)
+
+            if ziel_channel is None:
+                try:
+                    ziel_channel = await bot.fetch_channel(ziel_channel_id)
+                except discord.DiscordException:
+                    ziel_channel = None
+
+            if ziel_channel:
+                await ziel_channel.send(
+                    f"## 🌱 {name}\n"
+                    f"🆔 **Pflanzen-ID:** {pflanzen_id}\n"
+                    f"🧬 **Sorte:** {sorte}\n"
+                    f"🌿 **Typ:** {bluetentyp}\n"
+                    f"📍 **Growlog:** {interaction.channel.mention}\n"
+                    f"🌱 **Phase:** {phase_text}\n"
+                    f"👤 **Grower:** {interaction.user.mention}\n"
+                    f"🔗 **Original-Growlog:** {thread.jump_url}"
+                )
 
     await interaction.followup.send(
         f"✅ Growlog erstellt: {thread.mention}",
@@ -1609,6 +1665,7 @@ def speichere_pflanze(
     lampe,
     grower_id,
     genetik_typ,
+    bluetentyp,
     anbaumethode,
     lichtzyklus,
     status
@@ -1630,12 +1687,13 @@ def speichere_pflanze(
             lampe,
             grower_id,
             genetik_typ,
+            bluetentyp,
             anbaumethode,
             lichtzyklus,
             status,
             erstellt_am
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id
     """, (
         discord_channel_id,
@@ -1650,6 +1708,7 @@ def speichere_pflanze(
         lampe,
         grower_id,
         genetik_typ,
+        bluetentyp,
         anbaumethode,
         lichtzyklus,
         status,
