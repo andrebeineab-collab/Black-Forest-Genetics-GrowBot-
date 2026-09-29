@@ -560,20 +560,20 @@ async def grow_erstellen(
             )
 
             connection = get_db_connection()
-                cursor = connection.cursor()
+            cursor = connection.cursor()
 
-                cursor.execute(
-                    """
-                    UPDATE plants
-                    SET overview_message_id = %s
-                    WHERE id = %s
-                    """,
-                    (overview_message.id, pflanzen_db_id)
-                )
+            cursor.execute(
+                """
+                UPDATE plants
+                SET overview_message_id = %s
+                WHERE id = %s
+                """,
+                (overview_message.id, pflanzen_db_id)
+            )
 
-                connection.commit()
-                cursor.close()
-                connection.close()
+            connection.commit()
+            cursor.close()
+            connection.close()
         
     await interaction.followup.send(
         f"✅ Growlog erstellt: {thread.mention}",
