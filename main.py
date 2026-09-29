@@ -805,7 +805,7 @@ async def eintrag(
         """,
         (interaction.channel.id,)
     )
-pflanze = cursor.fetchone()
+    pflanze = cursor.fetchone()
 
     cursor.close()
     connection.close()
