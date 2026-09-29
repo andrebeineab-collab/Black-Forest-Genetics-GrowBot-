@@ -252,6 +252,11 @@ def init_db():
 
     cursor.execute("""
         ALTER TABLE plants
+        ADD COLUMN IF NOT EXISTS overview_message_id BIGINT
+    """)
+    
+    cursor.execute("""
+        ALTER TABLE plants
         ADD COLUMN IF NOT EXISTS anbaumethode TEXT
     """)
 
@@ -543,7 +548,7 @@ async def grow_erstellen(
                 ziel_channel = None
 
         if ziel_channel:
-            await ziel_channel.send(
+            overview_message = await ziel_channel.send(
                 f"## 🌱 {name}\n"
                 f"🆔 **Pflanzen-ID:** {pflanzen_id}\n"
                 f"🧬 **Sorte:** {sorte}\n"
@@ -554,6 +559,22 @@ async def grow_erstellen(
                 f"🔗 **Original-Growlog:** {thread.jump_url}"
             )
 
+            connection = get_db_connection()
+                cursor = connection.cursor()
+
+                cursor.execute(
+                    """
+                    UPDATE plants
+                    SET overview_message_id = %s
+                    WHERE id = %s
+                    """,
+                    (overview_message.id, pflanzen_db_id)
+                )
+
+                connection.commit()
+                cursor.close()
+                connection.close()
+        
     await interaction.followup.send(
         f"✅ Growlog erstellt: {thread.mention}",
         ephemeral=True
@@ -763,6 +784,83 @@ async def eintrag(
         f"{wuchshoehe} {wuchshoehe_einheit.value if wuchshoehe_einheit else ''}".strip(),
         notizen
     )
+
+    # Auto-/Photo-Übersicht nach neuem Growlog-Eintrag aktualisieren
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            id,
+            name,
+            sorte,
+            bluetentyp,
+            phase,
+            grower_id,
+            discord_channel_id,
+            overview_message_id
+        FROM plants
+        WHERE discord_thread_id = %s
+        """,
+        (interaction.channel.id,)
+    )
+pflanze = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if pflanze:
+        (
+            pflanzen_db_id,
+            pflanzen_name,
+            sorte,
+            bluetentyp,
+            phase,
+            grower_id,
+            discord_channel_id,
+            overview_message_id
+        ) = pflanze
+
+        if overview_message_id:
+            ziel_channel_id = get_genetik_growlog_channel_id(bluetentyp)
+
+            if ziel_channel_id:
+                ziel_channel =bot.get_channel(ziel_channel_id)
+
+                if ziel_channel is None:
+                    try:
+                        ziel_channel = await bot.fetch_channel(ziel_channel_id)
+                    except discord.DiscordException:
+                        ziel_channel = None
+
+                if ziel_channel:
+                    try:
+                        overview_message = await ziel_channel.fetch_message(
+                            overview_message_id
+                        )
+
+                        pflanzen_id = f"BFG-P{pflanzen_db_id:04d}"
+
+                        await overview_message.edit(
+                            content=(
+                                f"## 🌱 {pflanzen_name}\n"
+                                f"🆔 **Pflanzen-ID:** {pflanzen_id}\n"
+                                f"🧬 **Sorte:** {sorte}\n"
+                                f"🌿 **Typ:** {bluetentyp}\n"
+                                f"📍 **Growlog:** <#{discord_channel_id}>\n"
+                                f"🌱 **Phase:** {phase}\n"
+                                f"🕒 **Letzter Growlog-Eintrag:** "
+                                f"<t:{int(datetime.now(BERLIN_TZ).timestamp())}:R>\n"
+                                f"👤 **Grower:** <@{grower_id}>\n"
+                                f"🔗 **Original-Growlog:** "
+                                f"{interaction.channel.mention}"
+                            )
+                            )
+
+                    except discord.DiscordException:
+                        pass
+
 @bot.tree.command(
     name="historie",
     description="Zeigt die gespeicherten Growlog-Einträge dieses Threads."
